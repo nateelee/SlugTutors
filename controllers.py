@@ -25,12 +25,13 @@ session, db, T, auth, and tempates are examples of Fixtures.
 Warning: Fixtures MUST be declared with @action.uses({fixtures}) else your app will result in undefined behavior
 """
 
-from py4web import action, request, abort, redirect, URL
+from py4web import action, request, abort, redirect, URL, Field
 from yatl.helpers import A
 from .common import db, session, T, cache, auth, logger, authenticated, unauthenticated, flash
 from py4web.utils.url_signer import URLSigner
 from .models import get_user_email
 from py4web.utils.form import Form, FormStyleBulma
+from pydal.validators import *
 
 url_signer = URLSigner(session)
 
@@ -45,11 +46,35 @@ def index():
     return dict(form = form)
 
 # need to restrict this to only those who are signed in
-@action('tutor_add_class')
+@action('tutor_add_class', method = ["GET", "POST"])
 @action.uses(db, auth, 'tutor_add_class.html')
 def tutor_add_class():
-    form = Form(db.class_tutors, deletable = False ,csrf_session=session, formstyle=FormStyleBulma)
+    query = db(db.classes).select().as_list()
+    
+   
+    class_set = []
+    class_id = {}
+    for table in query:
+        class_set.append(table['class_name'])
+        class_id[table['class_name']] = table['id']
+    form = Form(
+        [Field('tutor_name'),
+        Field('class_name', requires=IS_IN_SET(class_set)),
+        Field('rate'),
+        Field('bio'),
+        Field('contact'),
+        Field('email')],
+        deletable = False ,csrf_session=session, formstyle=FormStyleBulma
+    )
     if form.accepted:
         # update happened, redirect
+        db.class_tutors.insert(
+            tutor_name = form.vars['tutor_name'],
+            class_name = class_id[form.vars['class_name']],
+            rate = form.vars['rate'],
+            bio = form.vars['bio'],
+            contact = form.vars['contact'],
+            email = form.vars['email'] 
+        )
         redirect(URL('index'))
     return dict(form = form)
