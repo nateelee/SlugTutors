@@ -19,5 +19,20 @@ def get_time():
 # db.define_table('thing', Field('name'))
 #
 ## always commit your models to avoid problems later
+db.define_table(
+    'classes',
+    Field('class_name')
+)
+
+
+db.define_table(
+    'class_tutors',
+    Field('tutor_name'),
+    Field('class_name', 'reference classes'),
+    Field('rate'),
+    Field('bio'),
+    Field('contact'),
+    Field('email')
+)
 
 db.commit()
