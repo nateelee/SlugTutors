@@ -1,0 +1,31 @@
+[[extend 'layout.html']]
+
+<section class="section">
+  <div class="title">Your Classes List</div>
+    <div class="container">
+      <table class="table is-striped is-fullwidth">
+        <tr>
+          <th>Class Name</th>
+          <th></th>
+          <th></th>
+          <th></th>
+        </tr>
+        [[for row in rows:]]
+        <tr>
+            <td>[[=row.class_id]]</td>
+            <td>
+                <a class="button is-danger" href="[[=URL('delete', row.id, signer=url_signer)]]">
+                    <span class="icon"><i class="fa fa-fw fa-trash"></i></span></a>
+            </td>
+        </tr>
+        [[pass]]
+      </table>
+    </div>
+    <div class = "section">
+      <a class="button is-success" href="[[=URL('tutor_add_class')]]">
+        <span class="icon"><i class="fa fa-plus"></i></span>
+        <span>Add Class</span>
+      </a>
+    </div>
+</section>
+
