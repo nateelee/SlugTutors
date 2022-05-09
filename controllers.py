@@ -31,10 +31,12 @@ from .common import db, session, T, cache, auth, logger, authenticated, unauthen
 from py4web.utils.url_signer import URLSigner
 from .models import get_user_email
 
-url_signer = URLSigner(session)
-
 @action('index')
-@action.uses(db, auth, 'index.html')
+@action.uses(db, auth.user, 'index.html')
 def index():
-    print("User:", get_user_email())
-    return dict()
+    tutor = db(db.tutor.user_email == get_user_email()).select()
+    classes = db(db.tutor.user_email == get_user_email()).select()
+    return dict(
+        tutor = tutor,
+        classes = classes
+    )
