@@ -81,7 +81,13 @@ elif settings.SESSION_TYPE == "database":
 # Instantiate the object and actions that handle auth
 # #######################################################
 
-auth = Auth(session, db, define_tables=False)
+auth = Auth(session, db, define_tables=False, extra_fields=[
+    # Other info for the profile.  But then all people would be tutors. 
+    # Or you can use the tutors table. 
+    Field('is_tutor', 'boolean', readable=False, writable=False), # so don't ask on registration. 
+    Field('bio', 'text'),
+    Field('rate', 'double', requires=IS_FLOAT_IN_RANGE(15, 100)),
+])
 
 # Fixes the messages.
 auth_messages = copy.deepcopy(auth.MESSAGES)
