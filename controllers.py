@@ -30,12 +30,12 @@ from .models import get_user_email
 url_signer = URLSigner(session)
 
 @action('index',  method = ["GET", "POST"])
-@action.uses(db, auth, 'index.html')
+@action.uses('index.html', db, auth)
 def index():
-    print("User:", get_user_email())
+    # print("User:", get_user_email())
     tutor_id = db(db.tutors.user_email == get_user_email()).select()[0].id
     rows = db((db.classes.id == db.class_to_tutor.class_id) & (db.tutors.id == db.class_to_tutor.tutor)).select().as_list()
-    print("Hello Rows: ",rows)
+    # print("New Rows: ",rows)
     
     # for row in rows:
     #     print(row['classes']['class_name'])
@@ -53,21 +53,23 @@ def delete(class_id=None):
 
 # extend this to the sign on page /edit profile
 @action('create_tutor', method = ["GET", "POST"])
-@action.uses(db, auth.user, 'create_tutor.html')
+@action.uses('create_tutor.html', db, auth.user)
 def create_tutor():
     rows = db(db.tutors.user_email == get_user_email()).select().as_list()
     # print("R0: ", rows[0])
+    test = 0
     if rows:
         form = Form(
-            db.tutors,
+            [Field('first_name'), Field('last_name'), Field('rate'), Field('bio')],
             record = rows[0],
             deletable = False,
             csrf_session=session, 
             formstyle=FormStyleBulma
         )
+        test = 1
     else:
         form = Form(
-            db.tutors,
+            [Field('first_name'), Field('last_name'), Field('rate'), Field('bio')],
             deletable = False,
             csrf_session=session, 
             formstyle=FormStyleBulma
@@ -75,15 +77,32 @@ def create_tutor():
     
     if form.accepted:
         # update happened, redirect
-        # print(form.vars)
-        tutor_id = db(db.tutors.user_email == get_user_email()).select()[0].id
-        print(db(db.tutors.user_email).select())
-        redirect(URL('tutor_add_class', tutor_id))
+        # tutor_id = db(db.tutors.user_email == get_user_email()).select()[0].id
+        # print(db(db.tutors.user_email).select())
+        if test == 0:
+            db.tutors.insert(
+                first_name = form.vars['first_name'],
+                last_name = form.vars['last_name'],
+                rate = form.vars['rate'],
+                bio = form.vars['bio']
+            )
+        else:
+            # print(rows[0]['id'])
+            row = db((db.tutors.user_email == get_user_email()) & (db.tutors.id == rows[0]['id'])).select().first()
+            # row = db()
+            row.update_record(
+                first_name = form.vars['first_name'],
+                last_name = form.vars['last_name'],
+                rate = form.vars['rate'],
+                bio = form.vars['bio']
+            )
+        # print("R1: ", row)
+        redirect(URL('index'))
     return dict(form = form)
 
 # need to restrict this to only those who are signed in
 @action('tutor_add_class/<tutor_id:int>', method = ["GET", "POST"])
-@action.uses(db, auth, 'tutor_add_class.html')
+@action.uses('tutor_add_class.html', db, auth)
 def tutor_add_class(tutor_id = None):
     assert tutor_id is not None
     print(tutor_id)

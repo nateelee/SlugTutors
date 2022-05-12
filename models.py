@@ -10,6 +10,9 @@ from pydal.validators import *
 def get_user_email():
     return auth.current_user.get('email') if auth.current_user else None
 
+# def get_user_firstname():
+#     return auth.current_user.get('first_name') if auth.current_user else None
+
 def get_time():
     return datetime.datetime.utcnow()
 
@@ -31,8 +34,6 @@ db.define_table(
 db.define_table(
     'classes',
     Field('class_name', 'string', requires=IS_NOT_EMPTY()),
-    # Field('professor', 'string'), #professor they had when taking the class
-    # Field('user_email', default=get_user_email),
 )
 
 #linkes tutors with classes they've taken
