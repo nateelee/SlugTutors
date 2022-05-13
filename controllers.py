@@ -25,26 +25,50 @@ from .models import get_user_email
 from py4web.utils.form import Form, FormStyleBulma
 from pydal.validators import *
 
-from .models import get_user_email
+from .models import get_user_email, get_first_name, get_last_name
 
 url_signer = URLSigner(session)
+
+
+from .settings import APP_FOLDER
+import os
+import json
+JSON_FILE = os.path.join(APP_FOLDER, "data", "classes.json")
+file_read = False
 
 @action('index',  method = ["GET", "POST"])
 @action.uses('index.html', db, auth)
 def index():
-    # print("User:", get_user_email())
-    # tutor_id = db(db.tutors.user_email == get_user_email()).select()[0].id
-    # rows = db((db.classes.id == db.class_to_tutor.class_id) & (db.tutors.id == db.class_to_tutor.tutor)).select().as_list()
-    # print("New Rows: ",rows)
-    
-    # for row in rows:
-    #     print(row['classes']['class_name'])
+    global file_read
+    if not file_read:
+        f = open(JSON_FILE)
+        
+        # returns JSON object as
+        # a dictionary
+        data = json.load(f)
+        keys = []
+        for mp in data:
+            for key,value in mp.items():
+                
+                db.classes.insert(
+                    class_name = value
+                )
+        file_read = True
     
     return dict()
 
 @action('tutorHomePage',  method = ["GET", "POST"])
-@action.uses('tutorHomePage.html', db, auth)
-def index():
+@action.uses('tutorHomePage.html', db, auth.user)
+def tutorHomePage():
+    res = db.tutors.update_or_insert (
+        (db.tutors.user_email == get_user_email()),
+        first_name = get_first_name(),
+        last_name = get_last_name(),
+        rate = "temp rate",
+        user_email = get_user_email(),
+        bio = "temp bio"
+    )
+  
     # print("User:", get_user_email())
     tutor_id = db(db.tutors.user_email == get_user_email()).select()[0].id
     rows = db((db.classes.id == db.class_to_tutor.class_id) & (db.tutors.id == db.class_to_tutor.tutor)).select().as_list()
@@ -118,7 +142,7 @@ def create_tutor():
 @action.uses('tutor_add_class.html', db, auth)
 def tutor_add_class(tutor_id = None):
     assert tutor_id is not None
-    print(tutor_id)
+    
     query = db(db.classes).select().as_list()
     
     class_set = []

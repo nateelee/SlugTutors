@@ -10,6 +10,11 @@ from pydal.validators import *
 def get_user_email():
     return auth.current_user.get('email') if auth.current_user else None
 
+def get_first_name():
+    return auth.current_user.get('first_name') if auth.current_user else None
+
+def get_last_name():
+    return auth.current_user.get('last_name') if auth.current_user else None
 # def get_user_firstname():
 #     return auth.current_user.get('first_name') if auth.current_user else None
 
