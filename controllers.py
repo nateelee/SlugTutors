@@ -39,6 +39,7 @@ file_read = False
 @action('index',  method = ["GET", "POST"])
 @action.uses('index.html', db, auth)
 def index():
+    # during final build, remove this db insertion
     global file_read
     if not file_read:
         f = open(JSON_FILE)
@@ -54,8 +55,13 @@ def index():
                     class_name = value
                 )
         file_read = True
+    tutor = db(db.tutors.user_email == get_user_email()).select()
+    classes = db(db.tutors.user_email == get_user_email()).select()
+    return dict(
+        tutor = tutor,
+        classes = classes
+    )
     
-    return dict()
 
 @action('tutorHomePage',  method = ["GET", "POST"])
 @action.uses('tutorHomePage.html', db, auth.user)
@@ -69,13 +75,9 @@ def tutorHomePage():
         bio = "temp bio"
     )
   
-    # print("User:", get_user_email())
     tutor_id = db(db.tutors.user_email == get_user_email()).select()[0].id
     rows = db((db.classes.id == db.class_to_tutor.class_id) & (db.tutors.id == db.class_to_tutor.tutor)).select().as_list()
-    # print("New Rows: ",rows)
-    
-    # for row in rows:
-    #     print(row['classes']['class_name'])
+   
     
     return dict(rows = rows, tutor_id = tutor_id)
 
