@@ -33,6 +33,19 @@ url_signer = URLSigner(session)
 @action.uses('index.html', db, auth)
 def index():
     # print("User:", get_user_email())
+    # tutor_id = db(db.tutors.user_email == get_user_email()).select()[0].id
+    # rows = db((db.classes.id == db.class_to_tutor.class_id) & (db.tutors.id == db.class_to_tutor.tutor)).select().as_list()
+    # print("New Rows: ",rows)
+    
+    # for row in rows:
+    #     print(row['classes']['class_name'])
+    
+    return dict()
+
+@action('tutorHomePage',  method = ["GET", "POST"])
+@action.uses('tutorHomePage.html', db, auth)
+def index():
+    # print("User:", get_user_email())
     tutor_id = db(db.tutors.user_email == get_user_email()).select()[0].id
     rows = db((db.classes.id == db.class_to_tutor.class_id) & (db.tutors.id == db.class_to_tutor.tutor)).select().as_list()
     # print("New Rows: ",rows)
@@ -48,7 +61,7 @@ def delete(class_id=None):
     assert class_id is not None
 
     db(db.class_to_tutor.class_id == class_id).delete()
-    redirect(URL('index'))
+    redirect(URL('tutorHomePage'))
     return dict()
 
 # extend this to the sign on page /edit profile
@@ -97,7 +110,7 @@ def create_tutor():
                 bio = form.vars['bio']
             )
         # print("R1: ", row)
-        redirect(URL('index'))
+        redirect(URL('tutorHomePage'))
     return dict(form = form)
 
 # need to restrict this to only those who are signed in
@@ -133,5 +146,5 @@ def tutor_add_class(tutor_id = None):
             tutor = tutor_id,
             class_id = class_id[form.vars['class_name']]
         )
-        redirect(URL('index'))
+        redirect(URL('tutorHomePage'))
     return dict(form = form)
