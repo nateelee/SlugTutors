@@ -95,7 +95,6 @@ def delete(class_id=None):
 @action.uses('create_tutor.html', db, auth.user)
 def create_tutor():
     rows = db(db.tutors.user_email == get_user_email()).select().as_list()
-    # print("R0: ", rows[0])
     test = 0
     if rows:
         form = Form(

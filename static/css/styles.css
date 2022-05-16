@@ -1,0 +1,5 @@
+.tutor-container {
+    display: flex;
+    flex-wrap: wrap;
+    grid-gap: 1em;
+}
