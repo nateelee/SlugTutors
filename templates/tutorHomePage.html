@@ -1,0 +1,39 @@
+[[extend 'layout.html']]
+
+<section class="section">
+   <div class="title">Your Class List</div>
+      <!-- Complete -->
+      <div class="container">
+         <table class="table is-striped is-fullwidth">
+            <tr>
+            <th>Class Name</th>
+            <th></th>
+            </tr>
+            [[for row in rows:]]
+            <tr>
+            <td>[[=row['classes']['class_name']]]</td>
+            <td> 
+               <a class="button is-danger" href="[[=URL('delete', row['classes']['id'])]]">
+                  <span class="icon"><i class="fa fa-fw fa-trash"></i></span>
+               </a>
+            </td>
+            </tr>
+            [[pass]]
+         </table>
+      </div>
+   </div>
+</section>
+
+<div class="section">
+   <a class="button is-success" href="[[=URL('create_tutor')]]">
+      <span class="icon">
+         <i class="fa fa-plus"></i>
+      </span>
+      <span>Edit your Profile</span>
+   </a>
+
+   <a class="button is-success" href="[[=URL('tutor_add_class', tutor_id)]]">
+      <span class="icon"><i class="fa fa-plus"></i></span>
+      <span>Add Classes</span>
+    </a>
+</div>
