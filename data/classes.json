@@ -1,11 +1,11 @@
 [
-    {"class_id": "CSE 12"},
-    {"class_id": "CSE 13"},
-    {"class_id": "CSE 30"},
-    {"class_id": "CSE 101"},
-    {"class_id": "CSE 102"},
-    {"class_id": "CSE 103"},
-    {"class_id": "CSE 107"},
-    {"class_id": "CSE 120"},
-    {"class_id": "CSE 130"}
+    "CSE 12",
+    "CSE 13",
+    "CSE 30",
+    "CSE 101",
+    "CSE 102",
+    "CSE 103",
+    "CSE 107",
+    "CSE 120",
+    "CSE 130"
   ]

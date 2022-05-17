@@ -3,20 +3,28 @@ This file defines the database models
 """
 
 import datetime
+import json
+import os
 from .common import db, Field, auth
+from .settings import APP_FOLDER
 from pydal.validators import *
 
 
 def get_user_email():
-    return auth.current_user.get('email') if auth.current_user else None
+    return auth.current_user.get("email") if auth.current_user else None
+
 
 def get_first_name():
-    return auth.current_user.get('first_name') if auth.current_user else None
+    return auth.current_user.get("first_name") if auth.current_user else None
+
 
 def get_last_name():
-    return auth.current_user.get('last_name') if auth.current_user else None
+    return auth.current_user.get("last_name") if auth.current_user else None
+
+
 # def get_user_firstname():
 #     return auth.current_user.get('first_name') if auth.current_user else None
+
 
 def get_time():
     return datetime.datetime.utcnow()
@@ -27,32 +35,42 @@ def get_time():
 # db.define_table('thing', Field('name'))
 #
 ## always commit your models to avoid problems later
+# db.define_table(
+#     "tutors",
+#     Field("first_name", "string", requires=IS_NOT_EMPTY()),
+#     Field("last_name", "string", requires=IS_NOT_EMPTY()),
+#     Field("rate", "string"),
+#     Field("user_email", default=get_user_email),
+#     Field("bio", "text"),
+# )
+
 db.define_table(
-    'tutors',
-    Field('first_name', 'string', requires=IS_NOT_EMPTY()),
-    Field('last_name', 'string', requires=IS_NOT_EMPTY()),
-    Field('rate', 'string'),
-    Field('user_email', default=get_user_email),
-    Field('bio', 'text')
+    "tutors",
+    Field("user", "reference auth_user", writable=False, readable=False),
+    Field("rate", "string", label="Base Rate"),
+    Field("bio", "text"),
 )
 
 db.define_table(
-    'classes',
-    Field('class_name', 'string', requires=IS_NOT_EMPTY()),
+    "classes",
+    Field("class_name", "string", requires=IS_NOT_EMPTY()),
 )
 
-#linkes tutors with classes they've taken
+# linkes tutors with classes they've taken
 db.define_table(
-    'class_to_tutor',
-    Field('tutor', 'reference tutors'),
-    Field('class_id', 'reference classes'),
+    "class_to_tutor",
+    Field("tutor", "reference tutors"),
+    Field("class_id", "reference classes"),
 )
 
-
-
-db.tutors.user_email.readable = db.tutors.user_email.writable = False
-# db.classes.user_email.readable = db.classes.user_email.writable = False
-db.tutors.id.readable = db.tutors.id.writable = False
+db.tutors.id.readable = False
+db.tutors.id.writable = False
+db.classes.id.readable = False
 db.classes.id.writable = False
-# db.classes.tutor_id.readable = db.classes.tutor_id.writable = False
+
+CLASSES = os.path.join(APP_FOLDER, "data", "classes.json")
+
+for c in json.load(open(CLASSES)):
+    db.classes.update_or_insert((db.classes.class_name == c), class_name=c)
+
 db.commit()
