@@ -30,7 +30,7 @@ from .models import get_user_email
 url_signer = URLSigner(session)
 
 @action('index',  method = ["GET", "POST"])
-@action.uses(db, auth, 'index.html')
+@action.uses('index.html', db, auth)
 def index():
     print("User:", get_user_email())
     tutor_id = db(db.tutors.user_email == get_user_email()).select()[0].id
@@ -53,7 +53,7 @@ def delete(class_id=None):
 
 # extend this to the sign on page /edit profile
 @action('create_tutor', method = ["GET", "POST"])
-@action.uses(db, auth.user, 'create_tutor.html')
+@action.uses('create_tutor.html', db, auth.user)
 def create_tutor():
     rows = db(db.tutors.user_email == get_user_email()).select().as_list()
     # print("R0: ", rows[0])
