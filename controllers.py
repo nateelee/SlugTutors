@@ -33,11 +33,10 @@ from .common import (
     flash,
 )
 from py4web.utils.url_signer import URLSigner
-from .models import get_user_email
 from py4web.utils.form import Form, FormStyleBulma
 from pydal.validators import *
 
-from .models import get_user_email, get_first_name, get_last_name
+from .models import get_user_email, get_first_name, get_last_name, get_tutor
 
 url_signer = URLSigner(session)
 
@@ -51,21 +50,31 @@ def index():
 @action("tutor_home", method=["GET", "POST"])
 @action.uses("tutor_home.html", db, auth.user)
 def tutor_home():
-    tutor = db(db.tutors.user == auth.current_user["id"]).select().first()
-    if tutor is None:
+    tutor_id = get_tutor().id
+    tutor_classes = (
+        db(
+            (db.class_to_tutor.tutor_id == tutor_id)
+            & (db.class_to_tutor.class_id == db.classes.id)
+        )
+        .select()
+        .as_list()
+    )
+    if tutor_classes is None:
         redirect(URL("create_tutor"))
-
- 
-
-    return dict(rows=rows, tutor_id=tutor_id)
+    print(tutor_classes)
+    return dict(classes=tutor_classes)
 
 
-@action("delete/<class_id:int>")
+@action("delete_class/<class_id:int>")
 @action.uses(db, session, auth.user)
 def delete(class_id=None):
     assert class_id is not None
 
-    db(db.class_to_tutor.class_id == class_id).delete()
+    tutor_id = get_tutor().id
+    db(
+        (db.class_to_tutor.class_id == class_id)
+        & (db.class_to_tutor.tutor_id == tutor_id)
+    ).delete()
     redirect(URL("tutor_home"))
     return dict()
 
@@ -84,7 +93,7 @@ def create_tutor():
 
     if form.accepted:
         db.tutors.update_or_insert(
-            user=auth.current_user["id"],
+            user_id=auth.current_user["id"],
             rate=form.vars["base_rate"],
             bio=form.vars["bio"],
         )
@@ -97,14 +106,14 @@ def create_tutor():
 @action("edit_tutor", method=["GET", "POST"])
 @action.uses("edit_tutor.html", db, auth.user)
 def create_tutor():
-    record = db(db.tutors.user == auth.current_user["id"]).select().first()
+    tutor = get_tutor()
 
-    if record is None:
+    if tutor is None:
         redirect(URL("index"))
 
     form = Form(
         db.tutors,
-        record=record,
+        record=tutor,
         deletable=False,
         csrf_session=session,
         formstyle=FormStyleBulma,
@@ -133,7 +142,7 @@ def tutor_add_class():
 
     if form.accepted:
         db.class_to_tutor.insert(
-            tutor=auth.current_user["id"], class_id=form.vars["class_id"]
+            tutor_id=get_tutor().id, class_id=form.vars["class_id"]
         )
         redirect(URL("tutor_home"))
 

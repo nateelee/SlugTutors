@@ -10,6 +10,14 @@ from .settings import APP_FOLDER
 from pydal.validators import *
 
 
+def get_tutor():
+    return (
+        db(db.tutors.user_id == auth.current_user["id"]).select().first()
+        if auth.current_user
+        else None
+    )
+
+
 def get_user_email():
     return auth.current_user.get("email") if auth.current_user else None
 
@@ -46,7 +54,9 @@ def get_time():
 
 db.define_table(
     "tutors",
-    Field("user", "reference auth_user", writable=False, readable=False),
+    Field(
+        "user_id", "reference auth_user", writable=False, readable=False, unique=True
+    ),
     Field("rate", "string", label="Base Rate"),
     Field("bio", "text"),
 )
@@ -59,7 +69,7 @@ db.define_table(
 # linkes tutors with classes they've taken
 db.define_table(
     "class_to_tutor",
-    Field("tutor", "reference tutors"),
+    Field("tutor_id", "reference tutors"),
     Field("class_id", "reference classes"),
 )
 
@@ -71,6 +81,7 @@ db.classes.id.writable = False
 CLASSES = os.path.join(APP_FOLDER, "data", "classes.json")
 
 for c in json.load(open(CLASSES)):
-    db.classes.update_or_insert((db.classes.class_name == c), class_name=c)
+    if not db(db.classes.class_name == c).select().first():
+        db.classes.insert(class_name=c)
 
 db.commit()

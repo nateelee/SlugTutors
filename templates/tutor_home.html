@@ -9,13 +9,13 @@
         <th>Class Name</th>
         <th></th>
       </tr>
-      [[for row in rows:]]
+      [[for c in classes: ]]
       <tr>
-        <td>[[=row['classes']['class_name']]]</td>
+        <td>[[=c['classes']['class_name']]]</td>
         <td>
           <a
             class="button is-danger"
-            href="[[=URL('delete', row['classes']['id'])]]"
+            href="[[=URL('delete_class', c['classes']['id'])]]"
           >
             <span class="icon"><i class="fa fa-fw fa-trash"></i></span>
           </a>
@@ -35,7 +35,7 @@
     <span>Edit your Profile</span>
   </a>
 
-  <a class="button is-success" href="[[=URL('tutor_add_class', tutor_id)]]">
+  <a class="button is-success" href="[[=URL('tutor_add_class')]]">
     <span class="icon"><i class="fa fa-plus"></i></span>
     <span>Add Classes</span>
   </a>
