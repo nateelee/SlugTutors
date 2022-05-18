@@ -137,7 +137,7 @@ def tutor_add_class():
 
     form = Form(
         [
-            Field("class_id", requires=IS_IN_SET(classes)),
+            Field("class_name", requires=IS_IN_SET(classes)),
         ],
         deletable=False,
         csrf_session=session,
@@ -146,7 +146,7 @@ def tutor_add_class():
 
     if form.accepted:
         db.class_to_tutor.insert(
-            tutor_id=get_tutor().id, class_id=form.vars["class_id"]
+            tutor_id=get_tutor().id, class_id=form.vars["class_name"]
         )
         redirect(URL("tutor_home"))
 
