@@ -44,13 +44,17 @@ url_signer = URLSigner(session)
 @action("index")
 @action.uses("index.html", db, auth)
 def index():
+    
     return {}
 
 
 @action("tutor_home", method=["GET", "POST"])
 @action.uses("tutor_home.html", db, auth.user)
 def tutor_home():
-    tutor_id = get_tutor().id
+    if get_tutor() is not None:
+        tutor_id = get_tutor().id
+    else:
+        tutor_id = None
     tutor_classes = (
         db(
             (db.class_to_tutor.tutor_id == tutor_id)
@@ -59,9 +63,9 @@ def tutor_home():
         .select()
         .as_list()
     )
-    if tutor_classes is None:
+    if tutor_id is None:
         redirect(URL("create_tutor"))
-    print(tutor_classes)
+   
     return dict(classes=tutor_classes)
 
 

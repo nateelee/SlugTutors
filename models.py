@@ -38,24 +38,11 @@ def get_time():
     return datetime.datetime.utcnow()
 
 
-### Define your table below
-#
-# db.define_table('thing', Field('name'))
-#
-## always commit your models to avoid problems later
-# db.define_table(
-#     "tutors",
-#     Field("first_name", "string", requires=IS_NOT_EMPTY()),
-#     Field("last_name", "string", requires=IS_NOT_EMPTY()),
-#     Field("rate", "string"),
-#     Field("user_email", default=get_user_email),
-#     Field("bio", "text"),
-# )
 
 db.define_table(
     "tutors",
     Field(
-        "user_id", "reference auth_user", writable=False, readable=False, unique=True
+        "user_id", "reference auth_user", writable=False, readable=False
     ),
     Field("rate", "string", label="Base Rate"),
     Field("bio", "text"),
