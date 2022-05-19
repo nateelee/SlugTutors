@@ -53,7 +53,7 @@ let init = (app) => {
     app.init = () => {
         // Put here any initialization code.
         // Typically this is a server GET call to load the data.
-        axios.get(load_tutors_url).then(function (response) {
+        axios.get(get_tutors_url).then(function (response) {
             let tutor_list = response.data.tutor_list;
           
             // new addition

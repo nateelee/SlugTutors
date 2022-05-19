@@ -18,6 +18,7 @@ Warning: Fixtures MUST be declared with @action.uses({fixtures}) else your app w
 """
 
 from collections import OrderedDict
+from itertools import groupby
 
 from py4web import action, request, abort, redirect, URL, Field
 from yatl.helpers import A
@@ -45,38 +46,53 @@ url_signer = URLSigner(session)
 @action("index")
 @action.uses("index.html", db, auth, url_signer)
 def index():
-   
-    load_tutors_url = URL('load_tutors', signer=url_signer)
-    get_tutor_classes_url = URL('get_tutor_classes', signer = url_signer)
-    return dict(load_tutors_url = load_tutors_url, get_tutor_classes_url = get_tutor_classes_url)
 
-@action('load_tutors')
-@action.uses(url_signer.verify(), db, auth)
-def load_tutors():
-    tutor_list = db(db.tutors).select().as_list()
-    
-    return dict(tutor_list = tutor_list)
+    get_tutors_url = URL("get_tutors", signer=url_signer)
+    get_tutor_classes_url = URL("get_tutor_classes", signer=url_signer)
+    return dict(
+        get_tutors_url=get_tutors_url, get_tutor_classes_url=get_tutor_classes_url
+    )
 
-@action('get_tutor_classes')
+
+@action("get_tutors")
+@action.uses(db, auth)
+def get_tutors():
+    classes = request.params.get("classes", None)
+
+    q = (db.tutors.id == db.tutors.id)
+
+    if classes is not None:
+        classes = [int(c) for c in classes.split(",")]
+
+        q &= (db.tutors.id == db.class_to_tutor.tutor_id)
+        q &= (db.class_to_tutor.class_id.belongs(classes))
+
+    tutor_list = db(q).select(db.tutors.ALL, groupby=db.tutors.id).as_list()
+
+    print(tutor_list)
+    return dict(tutor_list=tutor_list)
+
+
+@action("get_tutor_classes")
 @action.uses(url_signer.verify(), db, auth)
 def get_tutor_classes():
-  
-    tutor_id = int(request.params.get('tutor_id'))
+
+    tutor_id = int(request.params.get("tutor_id"))
     classes_tutored = db((db.class_to_tutor.tutor_id == tutor_id)).select()
 
     classes = db(db.classes).select().as_list()
-    
+
     classes_to_return = []
-    
+
     class_dictionary = {}
     for c in classes:
-        class_dictionary[c['id']] = c['class_name']
+        class_dictionary[c["id"]] = c["class_name"]
     for tutor_class in classes_tutored:
-        classes_to_return.append(class_dictionary[tutor_class['class_id']])
+        classes_to_return.append(class_dictionary[tutor_class["class_id"]])
 
-    
-    return dict(classes_tutored = classes_to_return)
-   
+    return dict(classes_tutored=classes_to_return)
+
+
 @action("tutor_home", method=["GET", "POST"])
 @action.uses("tutor_home.html", db, auth.user)
 def tutor_home():
@@ -94,7 +110,7 @@ def tutor_home():
     )
     if tutor_id is None:
         redirect(URL("create_tutor"))
-   
+
     return dict(classes=tutor_classes)
 
 
@@ -150,7 +166,7 @@ def create_tutor():
         deletable=False,
         csrf_session=session,
         formstyle=FormStyleBulma,
-    ) 
+    )
     if form.accepted:
         redirect(URL("tutor_home"))
 
@@ -162,24 +178,20 @@ def create_tutor():
 @action.uses("tutor_add_class.html", db, auth.user)
 def tutor_add_class():
     classes = {c["id"]: c["class_name"] for c in db(db.classes).select()}
-    
+
     form = Form(
         [
             Field("class_name", requires=IS_IN_SET(classes)),
-            #Field("availability", default = "1 PM - 2 PM"),
-           
+            # Field("availability", default = "1 PM - 2 PM"),
         ],
-        
         deletable=False,
         csrf_session=session,
         formstyle=FormStyleBulma,
     )
-  
 
     if form.accepted:
         db.class_to_tutor.insert(
-            tutor_id=get_tutor().id, 
-            class_id=form.vars["class_name"]
+            tutor_id=get_tutor().id, class_id=form.vars["class_name"]
         )
         redirect(URL("tutor_home"))
 
