@@ -29,9 +29,8 @@ def get_first_name():
 def get_last_name():
     return auth.current_user.get("last_name") if auth.current_user else None
 
-
-# def get_user_firstname():
-#     return auth.current_user.get('first_name') if auth.current_user else None
+def get_full_name():
+    return f"{auth.current_user.get('first_name')} {auth.current_user.get('last_name')}" if auth.current_user else None
 
 
 def get_time():
@@ -44,7 +43,8 @@ db.define_table(
     Field(
         "user_id", "reference auth_user", writable=False, readable=False
     ),
-    Field("name", default = get_first_name),
+    Field("name", default = get_full_name),
+    Field("email", default = get_user_email),
     Field("rate", "string", label="Base Rate"),
     Field("bio", "text"),
 )
@@ -59,10 +59,19 @@ db.define_table(
     "class_to_tutor",
     Field("tutor_id", "reference tutors"),
     Field("class_id", "reference classes"),
+    Field("availability", default = "None"),
+)
+
+db.define_table(
+    "days",
+    Field("Monday"),
+    Field("Tues"),
+    
 )
 
 db.tutors.id.readable = False
 db.tutors.id.writable = False
+db.tutors.email.writable = False
 db.classes.id.readable = False
 db.classes.id.writable = False
 

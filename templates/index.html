@@ -5,9 +5,8 @@
     <div class="column">
       <h1 class="title">Tutors</h1>
       <div class="tutor-container">
-        
-        <div v-for = "tutor in tutor_list" class="card">
-          <div class="card-content">
+        <div v-for = "tutor in tutor_list" class="card" @click="toggle_select(tutor._idx)">
+          <div class="card-content" >
             <div class="media">
               <div class="media-left">
                 <figure class="image is-48x48">
@@ -35,7 +34,7 @@
         
       </div>
     </div>
-    <div class="column is-one-third">
+    <div class="column is-one-third" v-if = "is_selected">
       <div class="card">
         <div class="card-content">
           <div class="media">
@@ -48,9 +47,9 @@
               </figure>
             </div>
             <div class="media-content">
-              <p class="title is-4">John Smith</p>
+              <p class="title is-4">{{selected_tutor.name}}</p>
               <p class="subtitle is-6">
-                Computer Science / 4th Year<br />jsmith@ucsc.edu
+                Computer Science / 4th Year<br />{{selected_tutor.email}}
               </p>
             </div>
           </div>
@@ -58,17 +57,34 @@
           <div class="content">
             <h5>Bio</h5>
             <p>
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-              eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                {{selected_tutor.bio}}
             </p>
             <h5>Rate</h5>
-            <div class="tags">
-              <span class="tag"><b>CSE 183 - </b>&nbsp;$20</span>
-              <span class="tag"><b>CSE 101 - </b>&nbsp;$20</span>
-              <span class="tag"><b>CSE 102 - </b>&nbsp;$20</span>
+            <div class="tags" v-for = "c in selected_tutor.classes">
+              <span class="tag"><b>{{c}} - </b>${{selected_tutor.rate}}</span>
+             
             </div>
             <h5>Availability</h5>
-            <p>I'm available MWF after 5pm.</p>
+            <table class="table">
+                <thead>
+                  <tr>
+                    <th>Class</th>
+                    <th>Time</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>CSE 101</td>
+                    <td>M: 1-2 PM, TH: 3-4 PM</td>
+                  </tr>
+                  <tr>
+                    <td>CSE 102</td>
+                    <td>W: 5-6 PM, F: 6-7 PM</td>
+                  </tr>
+                  
+                </tbody>
+              </table>
+          
             <h5>Class History</h5>
             <table class="table">
               <thead>
@@ -109,29 +125,7 @@
                 </tr>
               </tbody>
             </table>
-            <h5>Skills</h5>
-            <table class="table">
-              <thead>
-                <tr>
-                  <th>Skill</th>
-                  <th>Proficiency</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>Python</td>
-                  <td>Expert</td>
-                </tr>
-                <tr>
-                  <td>C++</td>
-                  <td>Intermediate</td>
-                </tr>
-                <tr>
-                  <td>HTML</td>
-                  <td>Beginner</td>
-                </tr>
-              </tbody>
-            </table>
+            
           </div>
         </div>
       </div>

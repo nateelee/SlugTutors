@@ -35,6 +35,7 @@ from .common import (
 from py4web.utils.url_signer import URLSigner
 from py4web.utils.form import Form, FormStyleBulma
 from pydal.validators import *
+from py4web.utils.grid import Grid, GridClassStyleBulma
 
 from .models import get_user_email, get_first_name, get_last_name, get_tutor
 
@@ -44,6 +45,7 @@ url_signer = URLSigner(session)
 @action("index")
 @action.uses("index.html", db, auth, url_signer)
 def index():
+   
     load_tutors_url = URL('load_tutors', signer=url_signer)
     get_tutor_classes_url = URL('get_tutor_classes', signer = url_signer)
     return dict(load_tutors_url = load_tutors_url, get_tutor_classes_url = get_tutor_classes_url)
@@ -55,14 +57,10 @@ def load_tutors():
     
     return dict(tutor_list = tutor_list)
 
-'''
-[{'id': 5, 'user_id': 1, 'name': None, 'rate': 'temp rate', 'bio': 'temp bio'}, 
-{'id': 6, 'user_id': 4, 'name': None, 'rate': 'temp rate', 'bio': 'temp bio bio'}]
-'''
 @action('get_tutor_classes')
 @action.uses(url_signer.verify(), db, auth)
 def get_tutor_classes():
-    
+  
     tutor_id = int(request.params.get('tutor_id'))
     classes_tutored = db((db.class_to_tutor.tutor_id == tutor_id)).select()
 
@@ -79,9 +77,6 @@ def get_tutor_classes():
     
     return dict(classes_tutored = classes_to_return)
    
-
-
-
 @action("tutor_home", method=["GET", "POST"])
 @action.uses("tutor_home.html", db, auth.user)
 def tutor_home():
@@ -155,8 +150,7 @@ def create_tutor():
         deletable=False,
         csrf_session=session,
         formstyle=FormStyleBulma,
-    )
-
+    ) 
     if form.accepted:
         redirect(URL("tutor_home"))
 
@@ -168,19 +162,24 @@ def create_tutor():
 @action.uses("tutor_add_class.html", db, auth.user)
 def tutor_add_class():
     classes = {c["id"]: c["class_name"] for c in db(db.classes).select()}
-
+    
     form = Form(
         [
             Field("class_name", requires=IS_IN_SET(classes)),
+            #Field("availability", default = "1 PM - 2 PM"),
+           
         ],
+        
         deletable=False,
         csrf_session=session,
         formstyle=FormStyleBulma,
     )
+  
 
     if form.accepted:
         db.class_to_tutor.insert(
-            tutor_id=get_tutor().id, class_id=form.vars["class_name"]
+            tutor_id=get_tutor().id, 
+            class_id=form.vars["class_name"]
         )
         redirect(URL("tutor_home"))
 

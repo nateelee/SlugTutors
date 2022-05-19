@@ -11,6 +11,8 @@ let init = (app) => {
     app.data = {
         // Complete as you see fit.
         tutor_list: [],
+        selected_tutor: {},
+        is_selected: false,
     };
 
     app.enumerate = (a) => {
@@ -27,10 +29,17 @@ let init = (app) => {
         return a;
     };
 
-  
+    app.toggle_select = function (profile_index) {
+        let profile = app.vue.tutor_list[profile_index];
+        app.vue.is_selected = true;
+        app.vue.selected_tutor = profile;
+        
+
+    };
     // This contains all the methods.
     app.methods = {
         // Complete as you see fit.
+        toggle_select: app.toggle_select,
     };
 
     // This creates the Vue instance.
