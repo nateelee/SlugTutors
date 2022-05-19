@@ -42,10 +42,44 @@ url_signer = URLSigner(session)
 
 
 @action("index")
-@action.uses("index.html", db, auth)
+@action.uses("index.html", db, auth, url_signer)
 def index():
+    load_tutors_url = URL('load_tutors', signer=url_signer)
+    get_tutor_classes_url = URL('get_tutor_classes', signer = url_signer)
+    return dict(load_tutors_url = load_tutors_url, get_tutor_classes_url = get_tutor_classes_url)
+
+@action('load_tutors')
+@action.uses(url_signer.verify(), db, auth)
+def load_tutors():
+    tutor_list = db(db.tutors).select().as_list()
     
-    return {}
+    return dict(tutor_list = tutor_list)
+
+'''
+[{'id': 5, 'user_id': 1, 'name': None, 'rate': 'temp rate', 'bio': 'temp bio'}, 
+{'id': 6, 'user_id': 4, 'name': None, 'rate': 'temp rate', 'bio': 'temp bio bio'}]
+'''
+@action('get_tutor_classes')
+@action.uses(url_signer.verify(), db, auth)
+def get_tutor_classes():
+    
+    tutor_id = int(request.params.get('tutor_id'))
+    classes_tutored = db((db.class_to_tutor.tutor_id == tutor_id)).select()
+
+    classes = db(db.classes).select().as_list()
+    
+    classes_to_return = []
+    
+    class_dictionary = {}
+    for c in classes:
+        class_dictionary[c['id']] = c['class_name']
+    for tutor_class in classes_tutored:
+        classes_to_return.append(class_dictionary[tutor_class['class_id']])
+
+    
+    return dict(classes_tutored = classes_to_return)
+   
+
 
 
 @action("tutor_home", method=["GET", "POST"])

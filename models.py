@@ -44,6 +44,7 @@ db.define_table(
     Field(
         "user_id", "reference auth_user", writable=False, readable=False
     ),
+    Field("name", default = get_first_name),
     Field("rate", "string", label="Base Rate"),
     Field("bio", "text"),
 )
