@@ -18,6 +18,7 @@ Warning: Fixtures MUST be declared with @action.uses({fixtures}) else your app w
 """
 
 from collections import OrderedDict
+from itertools import groupby
 
 from py4web import action, request, abort, redirect, URL, Field
 from yatl.helpers import A
@@ -35,6 +36,7 @@ from .common import (
 from py4web.utils.url_signer import URLSigner
 from py4web.utils.form import Form, FormStyleBulma
 from pydal.validators import *
+from py4web.utils.grid import Grid, GridClassStyleBulma
 
 from .models import get_user_email, get_first_name, get_last_name, get_tutor
 
@@ -42,10 +44,53 @@ url_signer = URLSigner(session)
 
 
 @action("index")
-@action.uses("index.html", db, auth)
+@action.uses("index.html", db, auth, url_signer)
 def index():
-    
-    return {}
+
+    get_tutors_url = URL("get_tutors", signer=url_signer)
+    get_tutor_classes_url = URL("get_tutor_classes", signer=url_signer)
+    return dict(
+        get_tutors_url=get_tutors_url, get_tutor_classes_url=get_tutor_classes_url
+    )
+
+
+@action("get_tutors")
+@action.uses(db, auth)
+def get_tutors():
+    classes = request.params.get("classes", None)
+
+    q = (db.tutors.id == db.tutors.id)
+
+    if classes is not None:
+        classes = [int(c) for c in classes.split(",")]
+
+        q &= (db.tutors.id == db.class_to_tutor.tutor_id)
+        q &= (db.class_to_tutor.class_id.belongs(classes))
+
+    tutor_list = db(q).select(db.tutors.ALL, groupby=db.tutors.id).as_list()
+
+    print(tutor_list)
+    return dict(tutor_list=tutor_list)
+
+
+@action("get_tutor_classes")
+@action.uses(url_signer.verify(), db, auth)
+def get_tutor_classes():
+
+    tutor_id = int(request.params.get("tutor_id"))
+    classes_tutored = db((db.class_to_tutor.tutor_id == tutor_id)).select()
+
+    classes = db(db.classes).select().as_list()
+
+    classes_to_return = []
+
+    class_dictionary = {}
+    for c in classes:
+        class_dictionary[c["id"]] = c["class_name"]
+    for tutor_class in classes_tutored:
+        classes_to_return.append(class_dictionary[tutor_class["class_id"]])
+
+    return dict(classes_tutored=classes_to_return)
 
 
 @action("tutor_home", method=["GET", "POST"])
@@ -65,7 +110,7 @@ def tutor_home():
     )
     if tutor_id is None:
         redirect(URL("create_tutor"))
-   
+
     return dict(classes=tutor_classes)
 
 
@@ -89,7 +134,7 @@ def delete(class_id=None):
 def create_tutor():
 
     form = Form(
-        [Field("base_rate"), Field("bio")],
+        [Field("base_rate"), Field("bio"),Field("major"), Field("year"),Field("class_history")],
         deletable=False,
         csrf_session=session,
         formstyle=FormStyleBulma,
@@ -98,13 +143,15 @@ def create_tutor():
     if form.accepted:
         db.tutors.update_or_insert(
             user_id=auth.current_user["id"],
+            major=form.vars["major"],
+            year=form.vars["year"],
             rate=form.vars["base_rate"],
             bio=form.vars["bio"],
+            history=form.vars["class_history"],
         )
         redirect(URL("tutor_home"))
 
     return dict(form=form)
-
 
 # edit a tutor profile
 @action("edit_tutor", method=["GET", "POST"])
@@ -122,7 +169,6 @@ def create_tutor():
         csrf_session=session,
         formstyle=FormStyleBulma,
     )
-
     if form.accepted:
         redirect(URL("tutor_home"))
 
@@ -138,6 +184,7 @@ def tutor_add_class():
     form = Form(
         [
             Field("class_name", requires=IS_IN_SET(classes)),
+            # Field("availability", default = "1 PM - 2 PM"),
         ],
         deletable=False,
         csrf_session=session,
@@ -151,3 +198,9 @@ def tutor_add_class():
         redirect(URL("tutor_home"))
 
     return dict(form=form)
+
+@action('back')
+@action.uses(db, auth.user, url_signer)
+def back():
+    redirect(URL("index"))
+    return dict()
