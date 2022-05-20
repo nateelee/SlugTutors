@@ -196,3 +196,9 @@ def tutor_add_class():
         redirect(URL("tutor_home"))
 
     return dict(form=form)
+
+@action('back')
+@action.uses(db, auth.user, url_signer)
+def back():
+    redirect(URL("index"))
+    return dict()
