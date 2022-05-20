@@ -134,7 +134,7 @@ def delete(class_id=None):
 def create_tutor():
 
     form = Form(
-        [Field("base_rate"), Field("bio")],
+        [Field("base_rate"), Field("bio"),Field("major"), Field("year"),Field("class_history")],
         deletable=False,
         csrf_session=session,
         formstyle=FormStyleBulma,
@@ -143,13 +143,15 @@ def create_tutor():
     if form.accepted:
         db.tutors.update_or_insert(
             user_id=auth.current_user["id"],
+            major=form.vars["major"],
+            year=form.vars["year"],
             rate=form.vars["base_rate"],
             bio=form.vars["bio"],
+            history=form.vars["class_history"],
         )
         redirect(URL("tutor_home"))
 
     return dict(form=form)
-
 
 # edit a tutor profile
 @action("edit_tutor", method=["GET", "POST"])
