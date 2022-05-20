@@ -216,3 +216,8 @@ def tutor_add_class():
 def back():
     redirect(URL("index"))
     return dict()
+
+@action('aboutus')
+@action.uses('aboutus.html')
+def aboutus():
+    return dict()
