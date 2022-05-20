@@ -46,11 +46,15 @@ url_signer = URLSigner(session)
 @action("index")
 @action.uses("index.html", db, auth, url_signer)
 def index():
-
+    classes = {c["id"]: c["class_name"] for c in db(db.classes).select()}
     get_tutors_url = URL("get_tutors", signer=url_signer)
     get_tutor_classes_url = URL("get_tutor_classes", signer=url_signer)
+
+    print(classes)
     return dict(
-        get_tutors_url=get_tutors_url, get_tutor_classes_url=get_tutor_classes_url
+        get_tutors_url=get_tutors_url,
+        get_tutor_classes_url=get_tutor_classes_url,
+        classes=classes,
     )
 
 
@@ -59,13 +63,13 @@ def index():
 def get_tutors():
     classes = request.params.get("classes", None)
 
-    q = (db.tutors.id == db.tutors.id)
+    q = db.tutors.id == db.tutors.id
 
     if classes is not None:
         classes = [int(c) for c in classes.split(",")]
 
-        q &= (db.tutors.id == db.class_to_tutor.tutor_id)
-        q &= (db.class_to_tutor.class_id.belongs(classes))
+        q &= db.tutors.id == db.class_to_tutor.tutor_id
+        q &= db.class_to_tutor.class_id.belongs(classes)
 
     tutor_list = db(q).select(db.tutors.ALL, groupby=db.tutors.id).as_list()
 
@@ -134,7 +138,13 @@ def delete(class_id=None):
 def create_tutor():
 
     form = Form(
-        [Field("base_rate"), Field("bio"),Field("major"), Field("year"),Field("class_history")],
+        [
+            Field("base_rate"),
+            Field("bio"),
+            Field("major"),
+            Field("year"),
+            Field("class_history"),
+        ],
         deletable=False,
         csrf_session=session,
         formstyle=FormStyleBulma,
@@ -152,6 +162,7 @@ def create_tutor():
         redirect(URL("tutor_home"))
 
     return dict(form=form)
+
 
 # edit a tutor profile
 @action("edit_tutor", method=["GET", "POST"])
@@ -199,7 +210,8 @@ def tutor_add_class():
 
     return dict(form=form)
 
-@action('back')
+
+@action("back")
 @action.uses(db, auth.user, url_signer)
 def back():
     redirect(URL("index"))
