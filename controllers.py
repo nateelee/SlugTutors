@@ -17,159 +17,190 @@ session, db, T, auth, and tempates are examples of Fixtures.
 Warning: Fixtures MUST be declared with @action.uses({fixtures}) else your app will result in undefined behavior
 """
 
+from collections import OrderedDict
+from itertools import groupby
+
 from py4web import action, request, abort, redirect, URL, Field
 from yatl.helpers import A
-from .common import db, session, T, cache, auth, logger, authenticated, unauthenticated, flash
+from .common import (
+    db,
+    session,
+    T,
+    cache,
+    auth,
+    logger,
+    authenticated,
+    unauthenticated,
+    flash,
+)
 from py4web.utils.url_signer import URLSigner
-from .models import get_user_email
 from py4web.utils.form import Form, FormStyleBulma
 from pydal.validators import *
+from py4web.utils.grid import Grid, GridClassStyleBulma
 
-from .models import get_user_email, get_first_name, get_last_name
+from .models import get_user_email, get_first_name, get_last_name, get_tutor
 
 url_signer = URLSigner(session)
 
 
-from .settings import APP_FOLDER
-import os
-import json
-JSON_FILE = os.path.join(APP_FOLDER, "data", "classes.json")
-file_read = False
-
-@action('index',  method = ["GET", "POST"])
-@action.uses('index.html', db, auth)
+@action("index")
+@action.uses("index.html", db, auth, url_signer)
 def index():
-    # during final build, remove this db insertion
-    global file_read
-    if not file_read:
-        f = open(JSON_FILE)
-        
-        # returns JSON object as
-        # a dictionary
-        data = json.load(f)
-        keys = []
-        for mp in data:
-            for key,value in mp.items():
-                
-                db.classes.insert(
-                    class_name = value
-                )
-        file_read = True
-    tutor = db(db.tutors.user_email == get_user_email()).select()
-    classes = db(db.tutors.user_email == get_user_email()).select()
+
+    get_tutors_url = URL("get_tutors", signer=url_signer)
+    get_tutor_classes_url = URL("get_tutor_classes", signer=url_signer)
     return dict(
-        tutor = tutor,
-        classes = classes
+        get_tutors_url=get_tutors_url, get_tutor_classes_url=get_tutor_classes_url
     )
-    
 
-@action('tutorHomePage',  method = ["GET", "POST"])
-@action.uses('tutorHomePage.html', db, auth.user)
-def tutorHomePage():
-    res = db.tutors.update_or_insert (
-        (db.tutors.user_email == get_user_email()),
-        first_name = get_first_name(),
-        last_name = get_last_name(),
-        rate = "temp rate",
-        user_email = get_user_email(),
-        bio = "temp bio"
+
+@action("get_tutors")
+@action.uses(db, auth)
+def get_tutors():
+    classes = request.params.get("classes", None)
+
+    q = (db.tutors.id == db.tutors.id)
+
+    if classes is not None:
+        classes = [int(c) for c in classes.split(",")]
+
+        q &= (db.tutors.id == db.class_to_tutor.tutor_id)
+        q &= (db.class_to_tutor.class_id.belongs(classes))
+
+    tutor_list = db(q).select(db.tutors.ALL, groupby=db.tutors.id).as_list()
+
+    print(tutor_list)
+    return dict(tutor_list=tutor_list)
+
+
+@action("get_tutor_classes")
+@action.uses(url_signer.verify(), db, auth)
+def get_tutor_classes():
+
+    tutor_id = int(request.params.get("tutor_id"))
+    classes_tutored = db((db.class_to_tutor.tutor_id == tutor_id)).select()
+
+    classes = db(db.classes).select().as_list()
+
+    classes_to_return = []
+
+    class_dictionary = {}
+    for c in classes:
+        class_dictionary[c["id"]] = c["class_name"]
+    for tutor_class in classes_tutored:
+        classes_to_return.append(class_dictionary[tutor_class["class_id"]])
+
+    return dict(classes_tutored=classes_to_return)
+
+
+@action("tutor_home", method=["GET", "POST"])
+@action.uses("tutor_home.html", db, auth.user)
+def tutor_home():
+    if get_tutor() is not None:
+        tutor_id = get_tutor().id
+    else:
+        tutor_id = None
+    tutor_classes = (
+        db(
+            (db.class_to_tutor.tutor_id == tutor_id)
+            & (db.class_to_tutor.class_id == db.classes.id)
+        )
+        .select()
+        .as_list()
     )
-  
-    tutor_id = db(db.tutors.user_email == get_user_email()).select()[0].id
-    rows = db((db.classes.id == db.class_to_tutor.class_id) & (db.tutors.id == db.class_to_tutor.tutor)).select().as_list()
-   
-    
-    return dict(rows = rows, tutor_id = tutor_id)
+    if tutor_id is None:
+        redirect(URL("create_tutor"))
 
-@action('delete/<class_id:int>')
+    return dict(classes=tutor_classes)
+
+
+@action("delete_class/<class_id:int>")
 @action.uses(db, session, auth.user)
 def delete(class_id=None):
     assert class_id is not None
 
-    db(db.class_to_tutor.class_id == class_id).delete()
-    redirect(URL('tutorHomePage'))
+    tutor_id = get_tutor().id
+    db(
+        (db.class_to_tutor.class_id == class_id)
+        & (db.class_to_tutor.tutor_id == tutor_id)
+    ).delete()
+    redirect(URL("tutor_home"))
     return dict()
 
-# extend this to the sign on page /edit profile
-@action('create_tutor', method = ["GET", "POST"])
-@action.uses('create_tutor.html', db, auth.user)
+
+# create tutor profile (rate, bio)
+@action("create_tutor", method=["GET", "POST"])
+@action.uses("create_tutor.html", db, auth.user)
 def create_tutor():
-    rows = db(db.tutors.user_email == get_user_email()).select().as_list()
-    test = 0
-    if rows:
-        form = Form(
-            [Field('first_name'), Field('last_name'), Field('rate'), Field('bio')],
-            record = rows[0],
-            deletable = False,
-            csrf_session=session, 
-            formstyle=FormStyleBulma
-        )
-        test = 1
-    else:
-        form = Form(
-            [Field('first_name'), Field('last_name'), Field('rate'), Field('bio')],
-            deletable = False,
-            csrf_session=session, 
-            formstyle=FormStyleBulma
-        )
-    
+
+    form = Form(
+        [Field("base_rate"), Field("bio"),Field("major"), Field("year"),Field("class_history")],
+        deletable=False,
+        csrf_session=session,
+        formstyle=FormStyleBulma,
+    )
+
     if form.accepted:
-        # update happened, redirect
-        # tutor_id = db(db.tutors.user_email == get_user_email()).select()[0].id
-        # print(db(db.tutors.user_email).select())
-        if test == 0:
-            db.tutors.insert(
-                first_name = form.vars['first_name'],
-                last_name = form.vars['last_name'],
-                rate = form.vars['rate'],
-                bio = form.vars['bio']
-            )
-        else:
-            # print(rows[0]['id'])
-            row = db((db.tutors.user_email == get_user_email()) & (db.tutors.id == rows[0]['id'])).select().first()
-            # row = db()
-            row.update_record(
-                first_name = form.vars['first_name'],
-                last_name = form.vars['last_name'],
-                rate = form.vars['rate'],
-                bio = form.vars['bio']
-            )
-        # print("R1: ", row)
-        redirect(URL('tutorHomePage'))
-    return dict(form = form)
+        db.tutors.update_or_insert(
+            user_id=auth.current_user["id"],
+            major=form.vars["major"],
+            year=form.vars["year"],
+            rate=form.vars["base_rate"],
+            bio=form.vars["bio"],
+            history=form.vars["class_history"],
+        )
+        redirect(URL("tutor_home"))
+
+    return dict(form=form)
+
+# edit a tutor profile
+@action("edit_tutor", method=["GET", "POST"])
+@action.uses("edit_tutor.html", db, auth.user)
+def create_tutor():
+    tutor = get_tutor()
+
+    if tutor is None:
+        redirect(URL("index"))
+
+    form = Form(
+        db.tutors,
+        record=tutor,
+        deletable=False,
+        csrf_session=session,
+        formstyle=FormStyleBulma,
+    )
+    if form.accepted:
+        redirect(URL("tutor_home"))
+
+    return dict(form=form)
+
 
 # need to restrict this to only those who are signed in
-@action('tutor_add_class/<tutor_id:int>', method = ["GET", "POST"])
-@action.uses('tutor_add_class.html', db, auth)
-def tutor_add_class(tutor_id = None):
-    assert tutor_id is not None
-    
-    query = db(db.classes).select().as_list()
-    
-    class_set = []
-    class_id = {}
-    for table in query:
-        query2 = db((db.class_to_tutor.class_id == table['id']) & (db.class_to_tutor.tutor == tutor_id)).select().as_list()
-        # print("Q2: ", query2)
-        if not query2:
-            class_set.append(table['class_name'])
-            class_id[table['class_name']] = table['id']
+@action("tutor_add_class", method=["GET", "POST"])
+@action.uses("tutor_add_class.html", db, auth.user)
+def tutor_add_class():
+    classes = {c["id"]: c["class_name"] for c in db(db.classes).select()}
 
     form = Form(
         [
-            Field('class_name', requires=IS_IN_SET(class_set)),
-        ], 
-        deletable = False,
-        csrf_session=session, 
-        formstyle=FormStyleBulma
+            Field("class_name", requires=IS_IN_SET(classes)),
+            # Field("availability", default = "1 PM - 2 PM"),
+        ],
+        deletable=False,
+        csrf_session=session,
+        formstyle=FormStyleBulma,
     )
-    
+
     if form.accepted:
-        # update happened, redirect
-      
         db.class_to_tutor.insert(
-            tutor = tutor_id,
-            class_id = class_id[form.vars['class_name']]
+            tutor_id=get_tutor().id, class_id=form.vars["class_name"]
         )
-        redirect(URL('tutorHomePage'))
-    return dict(form = form)
+        redirect(URL("tutor_home"))
+
+    return dict(form=form)
+
+@action('back')
+@action.uses(db, auth.user, url_signer)
+def back():
+    redirect(URL("index"))
+    return dict()

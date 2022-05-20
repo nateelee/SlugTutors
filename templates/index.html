@@ -1,145 +1,127 @@
 [[extend 'layout.html']]
 
-<div class="section">
-   <a class="button is-success" href="[[=URL('tutorHomePage')]]">
-      <span class="icon">
-         <i class="fa fa-plus"></i>
-      </span>
-     
-    </a>
-    <div class="container is-fluid columns">
-        <div class="column">
-          <h1 class="title">Tutors</h1>
-          <div class="tutor-container">
-            [[for i in range(8): ]]
-            <div class="card">
-              <div class="card-content">
-                <div class="media">
-                  <div class="media-left">
-                    <figure class="image is-48x48">
-                      <img
-                        src="https://bulma.io/images/placeholders/96x96.png"
-                        alt="Placeholder image"
-                      />
-                    </figure>
-                  </div>
-                  <div class="media-content">
-                    <p class="title is-4">John Smith</p>
-                  </div>
-                </div>
-    
-                <div class="content">
-                  <div class="tags">
-                    <span class="tag"><b>CSE 183 - </b> $20</span>
-                    <span class="tag"><b>CSE 101 - </b> $20</span>
-                    <span class="tag"><b>CSE 102 - </b> $20</span>
-                  </div>
-                </div>
+<div class="section" id="vue-target">
+  <div class="container is-fluid columns">
+    <div class="column">
+      <h1 class="title">Tutors</h1>
+      <div class="tutor-container">
+        <div v-for = "tutor in tutor_list" class="card" @click="toggle_select(tutor._idx)">
+          <div class="card-content" >
+            <div class="media">
+              <div class="media-left">
+                <figure class="image is-48x48">
+                  <img
+                    src="https://bulma.io/images/placeholders/96x96.png"
+                    alt="Placeholder image"
+                  />
+                </figure>
+              </div>
+              <div class="media-content">
+                <p class="title is-4">{{tutor.name}}</p>
               </div>
             </div>
-            [[pass]]
+
+            <div class="content">
+              <div class="tags" v-for = "tutor_class in tutor.classes">
+                <span class="tag" >
+                    <b>{{tutor_class}} - </b> {{tutor.rate}}
+                </span>
+              
+              </div>
+            </div>
           </div>
         </div>
-        <div class="column is-one-third">
-          <div class="card">
-            <div class="card-content">
-              <div class="media">
-                <div class="media-left">
-                  <figure class="image is-48x48">
-                    <img
-                      src="https://bulma.io/images/placeholders/96x96.png"
-                      alt="Placeholder image"
-                    />
-                  </figure>
-                </div>
-                <div class="media-content">
-                  <p class="title is-4">John Smith</p>
-                  <p class="subtitle is-6">
-                    Computer Science / 4th Year<br />jsmith@ucsc.edu
-                  </p>
-                </div>
-              </div>
-    
-              <div class="content">
-                <h5>Bio</h5>
-                <p>
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-                  eiusmod tempor incididunt ut labore et dolore magna aliqua.
-                </p>
-                <h5>Rate</h5>
-                <div class="tags">
-                  <span class="tag"><b>CSE 183 - </b>&nbsp;$20</span>
-                  <span class="tag"><b>CSE 101 - </b>&nbsp;$20</span>
-                  <span class="tag"><b>CSE 102 - </b>&nbsp;$20</span>
-                </div>
-                <h5>Availability</h5>
-                <p>I'm available MWF after 5pm.</p>
-                <h5>Class History</h5>
-                <table class="table">
-                  <thead>
-                    <tr>
-                      <th>Class</th>
-                      <th></th>
-                      <th>Quarter Taken</th>
-                      <th>Professor</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>CSE 101</td>
-                      <td></td>
-                      <td>Fall 2021</td>
-                      <td>Tantalo</td>
-                    </tr>
-                    <tr>
-                      <td>CSE 101</td>
-                      <td></td>
-    
-                      <td>Fall 2021</td>
-                      <td>Tantalo</td>
-                    </tr>
-                    <tr>
-                      <td>CSE 101</td>
-                      <td></td>
-    
-                      <td>Fall 2021</td>
-                      <td>Tantalo</td>
-                    </tr>
-                    <tr>
-                      <td>CSE 101</td>
-                      <td></td>
-    
-                      <td>Fall 2021</td>
-                      <td>Tantalo</td>
-                    </tr>
-                  </tbody>
-                </table>
-                <h5>Skills</h5>
-                <table class="table">
-                  <thead>
-                    <tr>
-                      <th>Skill</th>
-                      <th>Proficiency</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>Python</td>
-                      <td>Expert</td>
-                    </tr>
-                    <tr>
-                      <td>C++</td>
-                      <td>Intermediate</td>
-                    </tr>
-                    <tr>
-                      <td>HTML</td>
-                      <td>Beginner</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
+        
+      </div>
+    </div>
+    <div class="column is-one-third" v-if = "is_selected">
+      <div class="card">
+        <div class="card-content">
+          <div class="media">
+            <div class="media-left">
+              <figure class="image is-48x48">
+                <img
+                  src="https://bulma.io/images/placeholders/96x96.png"
+                  alt="Placeholder image"
+                />
+              </figure>
             </div>
+            <div class="media-content">
+              <p class="title is-4">{{selected_tutor.name}}</p>
+              <p class="subtitle is-6">
+                {{selected_tutor.major}}{{selected_tutor.year}}<br />{{selected_tutor.email}}
+              </p>
+            </div>
+          </div>
+
+          <div class="content">
+            <h5>Bio</h5>
+            <p>
+                {{selected_tutor.bio}}
+            </p>
+            <h5>Rate</h5>
+            <div class="tags" v-for = "c in selected_tutor.classes">
+              <span class="tag"><b>{{c}} - </b>${{selected_tutor.rate}}</span>
+             
+            </div>
+            <h5>Availability</h5>
+            <table class="table">
+                <thead>
+                  <tr>
+                    <th>Class</th>
+                    <th>Time</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>CSE 101</td>
+                    <td>M: 1-2 PM, TH: 3-4 PM</td>
+                  </tr>
+                  <tr>
+                    <td>CSE 102</td>
+                    <td>W: 5-6 PM, F: 6-7 PM</td>
+                  </tr>
+                  
+                </tbody>
+              </table>
+          
+            <h5>Class History</h5>
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Class</th>
+                  <th>Quarter Taken</th>
+                  <th>Professor</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                <td>
+                  {{selected_tutor.history}}
+                </td>
+
+              </tbody>
+            </table>
+            
           </div>
         </div>
       </div>
+    </div>
+  </div>
+  <a class="button is-success" href="[[=URL('tutor_home')]]">
+    <span class="icon">
+      <i class="fa fa-plus"></i>
+    </span>
+    <span>Tutor Dashboard</span>
+  </a>
 </div>
+
+[[block page_scripts]]
+<!-- Loads the index-specific js for Vue -->
+<script>
+  
+  let get_tutors_url = "[[=XML(get_tutors_url)]]";
+  let get_tutor_classes_url = "[[=XML(get_tutor_classes_url)]]";
+</script>
+<script src="js/index.js"></script>
+[[end]]
