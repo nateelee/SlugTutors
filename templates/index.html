@@ -49,7 +49,7 @@
             <div class="media-content">
               <p class="title is-4">{{selected_tutor.name}}</p>
               <p class="subtitle is-6">
-                Computer Science / 4th Year<br />{{selected_tutor.email}}
+                {{selected_tutor.major}}{{selected_tutor.year}}<br />{{selected_tutor.email}}
               </p>
             </div>
           </div>
@@ -90,39 +90,16 @@
               <thead>
                 <tr>
                   <th>Class</th>
-                  <th></th>
                   <th>Quarter Taken</th>
                   <th>Professor</th>
                 </tr>
               </thead>
+
               <tbody>
-                <tr>
-                  <td>CSE 101</td>
-                  <td></td>
-                  <td>Fall 2021</td>
-                  <td>Tantalo</td>
-                </tr>
-                <tr>
-                  <td>CSE 101</td>
-                  <td></td>
+                <td>
+                  {{selected_tutor.history}}
+                </td>
 
-                  <td>Fall 2021</td>
-                  <td>Tantalo</td>
-                </tr>
-                <tr>
-                  <td>CSE 101</td>
-                  <td></td>
-
-                  <td>Fall 2021</td>
-                  <td>Tantalo</td>
-                </tr>
-                <tr>
-                  <td>CSE 101</td>
-                  <td></td>
-
-                  <td>Fall 2021</td>
-                  <td>Tantalo</td>
-                </tr>
               </tbody>
             </table>
             
