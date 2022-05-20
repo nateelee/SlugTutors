@@ -37,7 +37,6 @@ def get_time():
     return datetime.datetime.utcnow()
 
 
-
 db.define_table(
     "tutors",
     Field(
@@ -46,7 +45,10 @@ db.define_table(
     Field("name", default = get_full_name),
     Field("email", default = get_user_email),
     Field("rate", "string", label="Base Rate"),
-    Field("bio", "text"),
+    Field("bio", "text", requires=IS_NOT_EMPTY()),
+    Field("major", requires=IS_NOT_EMPTY()),
+    Field("year", requires=IS_NOT_EMPTY()),
+    Field("history", label = ("Class History")),
 )
 
 db.define_table(
