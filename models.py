@@ -36,6 +36,9 @@ def get_full_name():
 def get_time():
     return datetime.datetime.utcnow()
 
+def get_user():
+    return auth.current_user.get('id') if auth.current_user else None
+
 
 db.define_table(
     "tutors",
@@ -50,6 +53,12 @@ db.define_table(
     Field("year", requires=IS_NOT_EMPTY()),
     Field("history", label = ("Class History")),
 )
+
+db.define_table('reviews',
+                Field('review', 'reference tutors'),
+                Field('rating', 'integer', default=10),
+                Field('rater', 'reference auth_user', default=get_user)
+                )
 
 db.define_table(
     "classes",
