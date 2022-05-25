@@ -227,5 +227,5 @@ def thumbnail(tutor_id=None):
     assert tutor_id is not None
 
     _, path = db.tutors.thumbnail.retrieve(db.tutors[tutor_id].thumbnail, nameonly=True)
-    return static_file(path, os.path.dirname(__file__), mimetype="auto")
+    return static_file(os.path.abspath(path), "/", mimetype="auto")
     
