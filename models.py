@@ -49,8 +49,8 @@ db.define_table(
     Field("bio", "text", requires=IS_NOT_EMPTY()),
     Field("major", requires=IS_NOT_EMPTY()),
     Field("year", requires=IS_NOT_EMPTY()),
-    Field("history", label = ("Class History")),
-    Field("thumbnail", 'upload'),
+    Field("history", label ="Class History"),
+    Field("thumbnail", 'upload', label="Avatar"),
 )
 
 db.define_table(

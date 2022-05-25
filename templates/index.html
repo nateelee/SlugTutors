@@ -14,7 +14,7 @@
       <div class="tutor-container">
         <div
           v-for="tutor in tutor_list"
-          class="card"
+          class="card tutor-card"
           @click="toggle_select(tutor._idx)"
         >
           <div class="card-content">
@@ -28,7 +28,7 @@
                 </figure>
                 <figure v-if = "tutor.thumbnail" class="image is-48x48">
                   <img
-                    :src="tutor.thumbnail"
+                    :src="`[[=URL('thumbnail') ]]/${tutor.id}`"
                     alt="Tutor image"
                   />
                 </figure>
@@ -38,13 +38,11 @@
               </div>
             </div>
 
-            <div class="content">
-              <div class="tags" v-for="tutor_class in tutor.classes">
-                <span class="tag">
+              <div class="tags">
+                <span class="tag" v-for="tutor_class in tutor.classes">
                   <b>{{tutor_class}} - </b> {{tutor.rate}}
                 </span>
               </div>
-            </div>
           </div>
         </div>
       </div>

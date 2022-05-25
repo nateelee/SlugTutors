@@ -17,10 +17,12 @@ session, db, T, auth, and tempates are examples of Fixtures.
 Warning: Fixtures MUST be declared with @action.uses({fixtures}) else your app will result in undefined behavior
 """
 
+import os
 from collections import OrderedDict
 from itertools import groupby
 
 from py4web import action, request, abort, redirect, URL, Field
+from ombott import static_file, static_stream
 from yatl.helpers import A
 from .common import (
     db,
@@ -143,7 +145,8 @@ def create_tutor():
             Field("bio"),
             Field("major"),
             Field("year"),
-            Field("class_history"),
+            Field("history"),
+            Field("thumbnail", 'upload', label="Avatar"),
         ],
         deletable=False,
         csrf_session=session,
@@ -157,7 +160,8 @@ def create_tutor():
             year=form.vars["year"],
             rate=form.vars["base_rate"],
             bio=form.vars["bio"],
-            history=form.vars["class_history"],
+            history=form.vars["history"],
+            thumbnail=form.vars["thumbnail"]
         )
         redirect(URL("tutor_home"))
 
@@ -216,3 +220,12 @@ def tutor_add_class():
 def back():
     redirect(URL("index"))
     return dict()
+
+@action("thumbnail/<tutor_id:int>")
+@action.uses(db)
+def thumbnail(tutor_id=None):
+    assert tutor_id is not None
+
+    _, path = db.tutors.thumbnail.retrieve(db.tutors[tutor_id].thumbnail, nameonly=True)
+    return static_file(path, os.path.dirname(__file__), mimetype="auto")
+    
