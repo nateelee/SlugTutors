@@ -21,7 +21,7 @@ import os
 from collections import OrderedDict
 from itertools import groupby
 
-from py4web import action, request, abort, redirect, URL, Field
+from py4web import action, request, abort, redirect, URL, Field, HTTP
 from ombott import static_file, static_stream
 from yatl.helpers import A
 from .common import (
@@ -226,6 +226,10 @@ def back():
 def thumbnail(tutor_id=None):
     assert tutor_id is not None
 
-    _, path = db.tutors.thumbnail.retrieve(db.tutors[tutor_id].thumbnail, nameonly=True)
-    return static_file(os.path.abspath(path), "/", mimetype="auto")
-    
+    t = db.tutors[tutor_id]
+    if not t:
+        raise HTTP(404)
+
+    _, f = db.tutors.thumbnail.retrieve(t.thumbnail)
+    path, filename = os.path.dirname(f.name), os.path.basename(f.name)
+    return static_file(filename, path, mimetype="auto")
