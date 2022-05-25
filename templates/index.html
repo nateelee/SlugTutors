@@ -5,6 +5,38 @@
     <div class="column">
       <h1 class="title">Tutors</h1>
 
+      <div class="dropdown is-hoverable">
+        <div class="dropdown-trigger">
+          <button
+                  class="button is-warning"
+                  aria-haspopup="true"
+                  aria-controls="dropdown-menu"
+                  onclick="document.querySelector('.dropdown').classList.toggle('is-active')"
+          >
+            <span>Class Filter</span>
+            <span class="icon is-small">
+          <i class="fa fa-angle-down" aria-hidden="true"></i>
+        </span>
+          </button>
+        </div>
+        <div
+                class="dropdown-menu"
+                id="dropdown-menu"
+                role="menu"
+        >
+          <div class="dropdown-content">
+            <div class="dropdown-item">
+              <div v-for="(name, id) in classes" class="field">
+                <label class="checkbox"> <input v-model="filter.classes[id]" type="checkbox"/> {{name}} </label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <br>
+      <br>
+
       <div class="tutor-container">
         <div
           v-for="tutor in tutor_list"
@@ -67,19 +99,24 @@
             <h5>Availability</h5>
             <table class="table">
               <thead>
-                <tr>
-                  <th>Class</th>
-                  <th>Time</th>
-                </tr>
+
               </thead>
+
               <tbody>
                 <tr>
-                  <td>CSE 101</td>
-                  <td>M: 1-2 PM, TH: 3-4 PM</td>
+                  <td>M:</td>
                 </tr>
                 <tr>
-                  <td>CSE 102</td>
-                  <td>W: 5-6 PM, F: 6-7 PM</td>
+                  <td>Tu:</td>
+                </tr>
+                <tr>
+                  <td>W:</td>
+                </tr>
+                <tr>
+                  <td>Th:</td>
+                </tr>
+                <tr>
+                  <td>F:</td>
                 </tr>
               </tbody>
             </table>
@@ -97,47 +134,20 @@
               <tbody>
                 <td>{{selected_tutor.history}}</td>
               </tbody>
+
             </table>
           </div>
         </div>
       </div>
     </div>
   </div>
-  <a class="button is-success" href="[[=URL('tutor_home')]]">
+  <a class="button is-link ml-5" href="[[=URL('tutor_home')]]">
     <span class="icon">
       <i class="fa fa-plus"></i>
     </span>
     <span>Tutor Dashboard</span>
   </a>
 
-  <div class="dropdown">
-    <div class="dropdown-trigger">
-      <button
-        class="button"
-        aria-haspopup="true"
-        aria-controls="dropdown-menu"
-        onclick="document.querySelector('.dropdown').classList.toggle('is-active')"
-      >
-        <span>Class Filter</span>
-        <span class="icon is-small">
-          <i class="fa fa-angle-down" aria-hidden="true"></i>
-        </span>
-      </button>
-    </div>
-    <div
-      class="dropdown-menu"
-      id="dropdown-menu"
-      role="menu"
-    >
-      <div class="dropdown-content">
-        <div class="dropdown-item">
-          <div v-for="(name, id) in classes" class="field">
-            <label class="checkbox"> <input v-model="filter.classes[id]" type="checkbox" /> {{name}} </label>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
 
   [[block page_scripts]]
   <!-- Loads the index-specific js for Vue -->
