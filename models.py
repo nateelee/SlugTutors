@@ -3,6 +3,7 @@ This file defines the database models
 """
 
 import datetime
+from distutils.command.upload import upload
 import json
 import os
 from .common import db, Field, auth
@@ -49,6 +50,7 @@ db.define_table(
     Field("major", requires=IS_NOT_EMPTY()),
     Field("year", requires=IS_NOT_EMPTY()),
     Field("history", label = ("Class History")),
+    Field("thumbnail", 'upload'),
 )
 
 db.define_table(
@@ -73,7 +75,7 @@ db.define_table(
 
 db.tutors.id.readable = False
 db.tutors.id.writable = False
-db.tutors.email.writable = False
+db.tutors.email.readable = db.tutors.email.writable = False
 db.classes.id.readable = False
 db.classes.id.writable = False
 
