@@ -81,6 +81,12 @@
                   <td>CSE 102</td>
                   <td>W: 5-6 PM, F: 6-7 PM</td>
                 </tr>
+                <tr>
+                  <td>CSE 102</td>
+                  <td>W: 5-6 PM, F: 6-7 PM</td>
+                </tr>
+
+
               </tbody>
             </table>
 
@@ -97,7 +103,12 @@
               <tbody>
                 <td>{{selected_tutor.history}}</td>
               </tbody>
+              
             </table>
+            <a class="button is-primary" :href="`[[=URL('see_reviews')]]/${selected_tutor.id}`">
+              <span>See Reviews</span>
+            </a>
+
           </div>
         </div>
       </div>
@@ -144,7 +155,7 @@
   <script>
     let get_tutors_url = "[[=XML(get_tutors_url)]]";
     let get_tutor_classes_url = "[[=XML(get_tutor_classes_url)]]";
-    let classes = [[=XML(classes)]];
+    let classes = "[[=XML(classes)]]";
   </script>
   <script src="js/index.js"></script>
   [[end]]

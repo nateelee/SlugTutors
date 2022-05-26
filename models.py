@@ -54,10 +54,23 @@ db.define_table(
     Field("history", label = ("Class History")),
 )
 
-db.define_table('reviews',
-                Field('review', 'reference tutors'),
-                Field('rating', 'integer', default=10),
-                Field('rater', 'reference auth_user', default=get_user)
+# db.define_table('reviews',
+#                 Field('review', 'reference tutors'),
+#                 Field('rating', 'integer', default=10),
+#                 Field('rater', 'reference auth_user', default=get_user)
+#                 )
+
+db.define_table('post',
+                Field('name'),
+                Field('post_url'),
+                Field('tutor_being_rated')
+                )
+
+db.define_table('thumb',
+                Field('post', 'reference post'),
+                Field('rating', 'integer', default=0),
+                Field('rater_name'),
+                Field('rater_id', 'reference auth_user', default=get_user) # User doing the rating.
                 )
 
 db.define_table(

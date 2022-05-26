@@ -38,7 +38,7 @@ from py4web.utils.form import Form, FormStyleBulma
 from pydal.validators import *
 from py4web.utils.grid import Grid, GridClassStyleBulma
 
-from .models import get_user_email, get_first_name, get_last_name, get_tutor
+from .models import get_user_email, get_first_name, get_last_name, get_tutor, get_user
 
 url_signer = URLSigner(session)
 
@@ -49,14 +49,20 @@ def index():
     classes = {c["id"]: c["class_name"] for c in db(db.classes).select()}
     get_tutors_url = URL("get_tutors", signer=url_signer)
     get_tutor_classes_url = URL("get_tutor_classes", signer=url_signer)
-
+    # toggle_select_url = URL("toggle_select")
     print(classes)
     return dict(
         get_tutors_url=get_tutors_url,
         get_tutor_classes_url=get_tutor_classes_url,
+        # toggle_select_url=toggle_select_url,
         classes=classes,
     )
 
+
+# @action("toggle_select", method="POST")
+# @action.uses( db, auth.user)
+# def toggle_select():
+#     return dict(selected_tutor=request.json.get('selected_tutor'))
 
 @action("get_tutors")
 @action.uses(db, auth)
@@ -211,8 +217,124 @@ def tutor_add_class():
     return dict(form=form)
 
 
+
 @action("back")
 @action.uses(db, auth.user, url_signer)
 def back():
     redirect(URL("index"))
     return dict()
+
+
+@action('see_reviews/<tutor_id:int>', method=['GET', 'POST']) # the :int means: please convert this to an int.
+@action.uses('see_reviews.html', db, auth.user)
+# ... has to match the contact_id parameter of the Python function here.
+def add_review(tutor_id=None):
+    assert tutor_id is not None
+    tutor = db((db.tutors.id == tutor_id)).select().as_list()
+    print("tutor is ", tutor)
+    tutor_name =""
+    for t in tutor:
+        tutor_name = t['name']
+    current_user = db.auth_user.first_name
+    return dict(
+        # This is the signed URL for the callback.
+        current_user = current_user,
+        tutor_name = tutor_name,
+        tutor_id = tutor_id,
+        load_posts_url = URL('load_posts', signer=url_signer),
+        add_post_url = URL('add_post', signer=url_signer),
+        delete_post_url = URL('delete_post', signer=url_signer),
+        edit_post_url = URL('edit_post', signer=url_signer),
+
+        get_rating_url = URL('get_rating', signer=url_signer),
+        set_rating_url = URL('set_rating', signer=url_signer),
+    )
+
+# This is our very first API function.
+@action('load_posts')
+@action.uses(url_signer.verify(), db)
+def load_posts():
+    name = db(db.auth_user.id == get_user()).select().first()
+    first_name = name.first_name
+    last_name = name.last_name
+    full_name = str(first_name) + " " + str(last_name)
+
+    posts = db(db.post).select().as_list()
+    print("POST IS ", posts)
+    for post in posts:
+        post['is_my_post'] = post.get('name') == full_name
+        thumbs = db(db.thumb.post == post['id']).select()
+        for thumb in thumbs:
+            thumb['rater_id'] = thumb.get('rater_id')
+        my_thumb = db((db.thumb.post == post['id']) & (
+            db.thumb.rater_id == get_user())).select().first()
+
+        post['my_thumb'] = my_thumb.get('rating') if my_thumb is not None else 0  
+    return dict(rows = posts)
+
+@action('add_post', method="POST")
+@action.uses(url_signer.verify(), db, auth.user)
+def add_post():
+    email = db(db.auth_user.email == get_user_email()).select().first()
+    name = db(db.auth_user.id == get_user()).select().first()
+    full_name = get_name(name)
+    id = db.post.insert(
+        post_url=request.json.get('post_url'),
+        name = full_name,
+        # tutor_being_rated = request.json.get('tutor_id'),
+    )
+
+    return dict(
+        id=id,
+        name = full_name,
+        email = email,
+    )
+
+@action('delete_post')
+@action.uses(url_signer.verify(), db)
+def delete_post():
+    id = request.params.get('id')
+    assert id is not None
+    db(db.post.id == id).delete()
+    return "ok"
+
+def get_name(name):
+    first_name = name.first_name
+    last_name = name.last_name
+    return str(first_name) + " " + str(last_name)
+
+@action('get_rating')
+@action.uses(url_signer.verify(), db, auth.user)
+def get_rating():
+    """Returns the rating for a user and an image."""
+    post_id = request.params.get('post_id')
+    thumbs = db((db.thumb.post == post_id)).select()
+    num_likes=0
+    num_dislikes = 0
+    return dict()
+
+
+
+
+@action('set_rating', method='POST')
+@action.uses(url_signer.verify(), db, auth.user)
+def set_rating():
+    """Sets the rating for an image."""
+    post_id = request.json.get('post_id')
+    rating = request.json.get('rating')
+    assert post_id is not None and rating is not None
+    name = db(db.auth_user.id == get_user()).select().first()
+    full_name = get_name(name)
+    posts = db(db.post).select().as_list()
+    thumbs = db(db.thumb.post == post_id).select()
+
+    db.thumb.update_or_insert(
+        ((db.thumb.post == post_id) & (db.thumb.rater_id == get_user())),
+        post=post_id,
+        rater_id=get_user(),
+        rating=rating,
+        rater_name = full_name
+    )
+    return "ok" # Just to have some confirmation in the Network tab.
+
+
