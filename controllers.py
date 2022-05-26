@@ -231,7 +231,7 @@ def tutor_add_history():
 
     form = Form(
         [
-            Field("coarse_name"),
+            Field("class_name"),
             Field("instructor"),
             Field("quarter_taken"),
         ],
@@ -243,7 +243,7 @@ def tutor_add_history():
     if form.accepted:
         db.history.update_or_insert(
             tutor_id=get_tutor().id,
-            coarse_name=form.vars["coarse_name"],
+            coarse_name=form.vars["class_name"],
             instructor=form.vars["instructor"],
             quarter_taken=form.vars["quarter_taken"]
         )
@@ -254,11 +254,12 @@ def tutor_add_history():
 @action("class_history", method=["GET", "POST"])
 @action.uses("class_history.html", db, auth.user)
 def class_history():
-    if get_tutor() is not None:
-        tutor_id = get_tutor().id
-    else:
-        tutor_id = None
-    classes_taken = db(db.history.tutor_id == tutor_id).select().as_list()
+    # if get_tutor() is not None:
+    #     tutor_id = get_tutor().id
+    # else:
+    #     tutor_id = None
+    tutor_id = get_tutor()
+    classes_taken = db((db.history.tutor_id == tutor_id)).select()
     if tutor_id is None:
         redirect(URL("tutor_home"))
 
