@@ -1,0 +1,32 @@
+[[extend 'layout.html']]
+
+<section class="section">
+    <div class="title">Your Class History</div>
+  <!-- Complete -->
+    <div class="container">
+    <table class="table is-striped is-fullwidth">
+        <thead>
+        <tr>
+            <th>Class</th>
+            <th>Professor</th>
+            <th>Quarter Taken</th>
+            <th></th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+            <div v-for="(coarse_name, instructor, quarter_taken) in classes" >
+                <td {{coarse_name}} {{instructor}} {{quarter_taken}} </td>
+            </div>
+        </tbody>
+
+    </table>
+    </div>
+</section>
+
+<a class="button is-link ml-5" href="[[=URL('tutor_add_history')]]">
+    <span class="icon">
+      <i class="fa fa-plus"></i>
+    </span>
+    <span>Add to Class History</span>
+  </a>
