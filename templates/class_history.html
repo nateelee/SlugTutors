@@ -1,32 +1,36 @@
 [[extend 'layout.html']]
 
 <section class="section">
-    <div class="title">Your Class History</div>
-  <!-- Complete -->
+    <div class="title ml-5">Your Class History</div>
+    <!-- Complete -->
     <div class="container">
-    <table class="table is-striped is-fullwidth">
-        <thead>
-        <tr>
-            <th>Class</th>
-            <th>Professor</th>
-            <th>Quarter Taken</th>
-            <th></th>
-            <th></th>
-        </tr>
-        </thead>
-        <tbody>
-            <div v-for="(coarse_name, instructor, quarter_taken) in classes" >
-                <td {{coarse_name}} {{instructor}} {{quarter_taken}} </td>
-            </div>
-        </tbody>
+        <table class="table is-striped is-fullwidth">
+            <tr>
+                <th>Class Name</th>
+                <th>Instructor</th>
+                <th>Quarter Taken</th>
+                <th></th>
+            </tr>
+            [[for row in rows:]]
+            <tr>
+                <td>[[=row.coarse_name]]</td>
+                <td>[[=row.instructor]]</td>
+                <td>[[=row.quarter_taken]]</td>
 
-    </table>
+                <td>
+                    <a class="button is-danger" href="[[=URL('delete', row.id)]]">
+                        <span class="icon"><i class="fa fa-fw fa-trash"></i></span>
+                    </a>
+                </td>
+            </tr>
+            [[pass]]
+        </table>
     </div>
 </section>
 
-<a class="button is-link ml-5" href="[[=URL('tutor_add_history')]]">
+<a class="button is-link ml-6" href="[[=URL('tutor_add_history')]]">
     <span class="icon">
-      <i class="fa fa-plus"></i>
+        <i class="fa fa-plus"></i>
     </span>
     <span>Add to Class History</span>
-  </a>
+</a>
