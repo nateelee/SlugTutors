@@ -1,9 +1,18 @@
 [[extend 'layout.html']]
 
 <div class="section" id="vue-target">
+
+  <a class="button is-link mr-6 is-pulled-right" href="[[=URL('tutor_home')]]">
+    <span class="icon">
+      <i class="fa fa-id-badge"></i>
+    </span>
+    <span>Tutor Dashboard</span>
+  </a>
+  <h1 class="title ml-5 pl-1">Available Tutors</h1>
+
   <div class="container is-fluid columns">
     <div class="column">
-      <h1 class="title">Tutors</h1>
+
 
       <div class="dropdown is-hoverable">
         <div class="dropdown-trigger">
@@ -132,7 +141,7 @@
               </thead>
 
               <tbody>
-                <td>Place   Place   Place</td>
+                <td>Place Place Place</td>
               </tbody>
 
             </table>
@@ -141,12 +150,7 @@
       </div>
     </div>
   </div>
-  <a class="button is-link ml-5" href="[[=URL('tutor_home')]]">
-    <span class="icon">
-      <i class="fa fa-plus"></i>
-    </span>
-    <span>Tutor Dashboard</span>
-  </a>
+
 
 
   [[block page_scripts]]
