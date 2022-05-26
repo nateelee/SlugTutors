@@ -221,3 +221,45 @@ def back():
 @action.uses('aboutus.html')
 def aboutus():
     return dict()
+
+
+@action("tutor_add_history", method=["GET", "POST"])
+@action.uses( "tutor_add_history.html", db, auth.user)
+def tutor_add_history():
+    tutor_id = get_tutor()
+    db((db.history.tutor_id == tutor_id)).select()
+
+    form = Form(
+        [
+            Field("coarse_name"),
+            Field("instructor"),
+            Field("quarter_taken"),
+        ],
+        deletable=False,
+        csrf_session=session,
+        formstyle=FormStyleBulma,
+    )
+
+    if form.accepted:
+        db.history.update_or_insert(
+            tutor_id=get_tutor().id,
+            coarse_name=form.vars["coarse_name"],
+            instructor=form.vars["instructor"],
+            quarter_taken=form.vars["quarter_taken"]
+        )
+        redirect(URL("class_history"))
+
+    return dict(form=form)
+
+@action("class_history", method=["GET", "POST"])
+@action.uses("class_history.html", db, auth.user)
+def class_history():
+    if get_tutor() is not None:
+        tutor_id = get_tutor().id
+    else:
+        tutor_id = None
+    classes_taken = db(db.history.tutor_id == tutor_id).select().as_list()
+    if tutor_id is None:
+        redirect(URL("tutor_home"))
+
+    return dict(classes=classes_taken)
