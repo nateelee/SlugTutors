@@ -46,6 +46,7 @@ url_signer = URLSigner(session)
 @action("index")
 @action.uses("index.html", db, auth, url_signer)
 def index():
+  
     classes = {c["id"]: c["class_name"] for c in db(db.classes).select()}
     get_tutors_url = URL("get_tutors", signer=url_signer)
     get_tutor_classes_url = URL("get_tutor_classes", signer=url_signer)
@@ -257,7 +258,7 @@ def load_posts():
 
     the_tutor_id = int(request.params.get('the_tutor_id'))
     posts = db(db.post.tutor_being_rated == the_tutor_id).select().as_list()
-  
+    
     for post in posts:
         post['is_my_post'] = post.get('name') == full_name
         thumbs = db(db.thumb.post == post['id']).select()
@@ -267,6 +268,7 @@ def load_posts():
             db.thumb.rater_id == get_user())).select().first()
 
         post['my_thumb'] = my_thumb.get('rating') if my_thumb is not None else 0  
+  
     return dict(rows = posts)
 
 @action('add_post', method="POST")
@@ -275,11 +277,13 @@ def add_post():
     email = db(db.auth_user.email == get_user_email()).select().first()
     name = db(db.auth_user.id == get_user()).select().first()
     full_name = get_name(name)
-    print(request.json.get('tutor_id'))
+  
+    print(request.json.get('rating_number'))
     id = db.post.insert(
         post_url=request.json.get('post_url'),
         name = full_name,
         tutor_being_rated = request.json.get('tutor_id'),
+        rating_number = request.json.get('rating_number'),
     )
 
     return dict(

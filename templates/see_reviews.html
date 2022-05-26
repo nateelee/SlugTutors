@@ -13,26 +13,42 @@
 
     <div v-if="add_mode" class="container block">
         <!-- <div class="title">Add Contact</div> -->
+        
         <div class="form">
-
+            <div class = "field block">
+                <div class = "">Rate out of 5</div>
+                <div class="select is-info is-medium">
+                    <select v-model = "rating_number">
+                        <option value = "5">5</option>
+                        <option value = "4">4</option>
+                        <option value = "3">3</option>
+                        <option value = "2">2</option>
+                        <option value = "1">1</option>
+                    </select>
+                </div>
+                 
+            </div>
             <div class="field">
                 <div class="control">
                     <textarea type="text" v-model="post_content" class="textarea"
                         placeholder="Enter a new post here"></textarea>
                 </div>
             </div>
-
+                
             <div class="field">
-                <div class="control">
+                <div v-if = "rating_number != 0" class="control">
                     <input type="submit" @click="add_post(tutor_id)" value="Post" class="button is-primary">
                     <input type="submit" @click="set_add_status(false)" value="Cancel" class="button is-danger">
+                </div>
+                <div v-if = "rating_number == 0" class="control">
+                    <div>Please enter a proper rating before submitting</div>
                 </div>
             </div>
         </div>
     </div>
 
 
-    <div class="container block">
+    <div v-if="!add_mode" class="container block">
 
         <button @click="set_add_status(true)" class="button is-warning">
             <a class="has-text-black">Rate [[=tutor_name]]</a>
@@ -42,6 +58,7 @@
         <div class="tile is-vertical">
             <div v-for="r in rows" class="tile is-child box is-light">
                 <div class="container">
+                    <div>{{r.rating_number}}/5</div>
                     <strong>{{r.post_url}}</strong>
                     <div class="is-size6 has-text-grey">{{r.name}}</div>
 

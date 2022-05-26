@@ -13,6 +13,7 @@ let init = (app) => {
         post_content: "",
         rows: [],
         the_tutor_id : 0,
+        rating_number: 0,
     };
 
     app.enumerate = (a) => {
@@ -27,6 +28,7 @@ let init = (app) => {
             p.rater_id = "";
         })
     };
+
 
 
     app.get_rating= async(postid) => {
@@ -55,6 +57,7 @@ let init = (app) => {
             {   
                 tutor_id: app.vue.the_tutor_id,
                 post_url: app.vue.post_content,
+                rating_number: app.vue.rating_number,
                
             }).then(function (response) {
             app.vue.rows.push({
@@ -62,10 +65,12 @@ let init = (app) => {
                 post_url: app.vue.post_content,
                 name: response.data.name,
                 is_my_post: true,
+                rating_number: app.vue.rating_number,
             });
             app.enumerate(app.vue.rows);
             app.reset_form();
             app.set_add_status(false);
+            app.vue.rating_number = 0;
         });
     };
 

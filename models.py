@@ -54,16 +54,13 @@ db.define_table(
     Field("history", label = ("Class History")),
 )
 
-# db.define_table('reviews',
-#                 Field('review', 'reference tutors'),
-#                 Field('rating', 'integer', default=10),
-#                 Field('rater', 'reference auth_user', default=get_user)
-#                 )
+
 
 db.define_table('post',
                 Field('name'),
                 Field('post_url'),
-                Field('tutor_being_rated')
+                Field('tutor_being_rated'),
+                Field('rating_number', 'integer', default = 0)
                 )
 
 db.define_table('thumb',
