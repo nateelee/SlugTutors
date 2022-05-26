@@ -80,7 +80,6 @@ def get_tutors():
 @action("get_tutor_classes")
 @action.uses(url_signer.verify(), db, auth)
 def get_tutor_classes():
-
     tutor_id = int(request.params.get("tutor_id"))
     classes_tutored = db((db.class_to_tutor.tutor_id == tutor_id)).select()
 
@@ -109,8 +108,8 @@ def tutor_home():
             (db.class_to_tutor.tutor_id == tutor_id)
             & (db.class_to_tutor.class_id == db.classes.id)
         )
-        .select()
-        .as_list()
+            .select()
+            .as_list()
     )
     if tutor_id is None:
         redirect(URL("create_tutor"))
@@ -136,7 +135,6 @@ def delete(class_id=None):
 @action("create_tutor", method=["GET", "POST"])
 @action.uses("create_tutor.html", db, auth.user)
 def create_tutor():
-
     form = Form(
         [
             Field("base_rate"),
@@ -215,14 +213,15 @@ def back():
     redirect(URL("index"))
     return dict()
 
+
 @action('aboutus')
-@action.uses('aboutus.html')
+@action.uses('aboutus.html', auth.user)
 def aboutus():
     return dict()
 
 
 @action("tutor_add_history", method=["GET", "POST"])
-@action.uses( "tutor_add_history.html", db, auth.user)
+@action.uses("tutor_add_history.html", db, auth.user)
 def tutor_add_history():
     tutor_id = get_tutor()
     db((db.history.tutor_id == tutor_id)).select()
@@ -249,16 +248,13 @@ def tutor_add_history():
 
     return dict(form=form)
 
+
 @action("class_history", method=["GET", "POST"])
 @action.uses("class_history.html", db, auth.user)
 def class_history():
-    # if get_tutor() is not None:
-    #     tutor_id = get_tutor().id
-    # else:
-    #     tutor_id = None
     tutor_id = get_tutor()
-    classes_taken = db((db.history.tutor_id == tutor_id)).select()
+    rows = db((db.history.tutor_id == tutor_id)).select()
     if tutor_id is None:
         redirect(URL("tutor_home"))
 
-    return dict(classes=classes_taken)
+    return dict(rows=rows)
