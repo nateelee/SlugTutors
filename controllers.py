@@ -143,7 +143,6 @@ def create_tutor():
             Field("bio"),
             Field("major"),
             Field("year"),
-            Field("class_history"),
         ],
         deletable=False,
         csrf_session=session,
@@ -157,7 +156,6 @@ def create_tutor():
             year=form.vars["year"],
             rate=form.vars["base_rate"],
             bio=form.vars["bio"],
-            history=form.vars["class_history"],
         )
         redirect(URL("tutor_home"))
 
