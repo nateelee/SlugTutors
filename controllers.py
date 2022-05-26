@@ -49,20 +49,13 @@ def index():
     classes = {c["id"]: c["class_name"] for c in db(db.classes).select()}
     get_tutors_url = URL("get_tutors", signer=url_signer)
     get_tutor_classes_url = URL("get_tutor_classes", signer=url_signer)
-    # toggle_select_url = URL("toggle_select")
-    print(classes)
+   
     return dict(
         get_tutors_url=get_tutors_url,
         get_tutor_classes_url=get_tutor_classes_url,
         # toggle_select_url=toggle_select_url,
         classes=classes,
     )
-
-
-# @action("toggle_select", method="POST")
-# @action.uses( db, auth.user)
-# def toggle_select():
-#     return dict(selected_tutor=request.json.get('selected_tutor'))
 
 @action("get_tutors")
 @action.uses(db, auth)
@@ -79,7 +72,7 @@ def get_tutors():
 
     tutor_list = db(q).select(db.tutors.ALL, groupby=db.tutors.id).as_list()
 
-    print(tutor_list)
+   
     return dict(tutor_list=tutor_list)
 
 
@@ -228,14 +221,15 @@ def back():
 @action('see_reviews/<tutor_id:int>', method=['GET', 'POST']) # the :int means: please convert this to an int.
 @action.uses('see_reviews.html', db, auth.user)
 # ... has to match the contact_id parameter of the Python function here.
-def add_review(tutor_id=None):
+def see_reviews(tutor_id=None):
     assert tutor_id is not None
     tutor = db((db.tutors.id == tutor_id)).select().as_list()
-    print("tutor is ", tutor)
+   
     tutor_name =""
     for t in tutor:
         tutor_name = t['name']
     current_user = db.auth_user.first_name
+  
     return dict(
         # This is the signed URL for the callback.
         current_user = current_user,
@@ -250,6 +244,8 @@ def add_review(tutor_id=None):
         set_rating_url = URL('set_rating', signer=url_signer),
     )
 
+
+
 # This is our very first API function.
 @action('load_posts')
 @action.uses(url_signer.verify(), db)
@@ -259,8 +255,9 @@ def load_posts():
     last_name = name.last_name
     full_name = str(first_name) + " " + str(last_name)
 
-    posts = db(db.post).select().as_list()
-    print("POST IS ", posts)
+    the_tutor_id = int(request.params.get('the_tutor_id'))
+    posts = db(db.post.tutor_being_rated == the_tutor_id).select().as_list()
+  
     for post in posts:
         post['is_my_post'] = post.get('name') == full_name
         thumbs = db(db.thumb.post == post['id']).select()
@@ -278,10 +275,11 @@ def add_post():
     email = db(db.auth_user.email == get_user_email()).select().first()
     name = db(db.auth_user.id == get_user()).select().first()
     full_name = get_name(name)
+    print(request.json.get('tutor_id'))
     id = db.post.insert(
         post_url=request.json.get('post_url'),
         name = full_name,
-        # tutor_being_rated = request.json.get('tutor_id'),
+        tutor_being_rated = request.json.get('tutor_id'),
     )
 
     return dict(

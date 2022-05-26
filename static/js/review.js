@@ -12,6 +12,7 @@ let init = (app) => {
         add_mode: false,
         post_content: "",
         rows: [],
+        the_tutor_id : 0,
     };
 
     app.enumerate = (a) => {
@@ -52,8 +53,9 @@ let init = (app) => {
     app.add_post = function (tutor_id) {
         axios.post(add_post_url,
             {   
-                // tutor_id: tutor_id,
+                tutor_id: app.vue.the_tutor_id,
                 post_url: app.vue.post_content,
+               
             }).then(function (response) {
             app.vue.rows.push({
                 id: response.data.id,
@@ -106,7 +108,8 @@ let init = (app) => {
     });
 
     app.init = () => {
-        axios.get(load_posts_url)
+        app.vue.the_tutor_id = tutor_id;
+        axios.get(load_posts_url,{ params: {the_tutor_id : tutor_id}})
         .then((result) => {
             let rows = result.data.rows;
             app.vue.rows = app.decorate(app.enumerate(result.data.rows));
