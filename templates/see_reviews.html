@@ -42,6 +42,7 @@
                 </div>
                 <div v-if = "rating_number == 0" class="control">
                     <div>Please enter a proper rating before submitting</div>
+                    <input type="submit" @click="set_add_status(false)" value="Cancel" class="button is-danger">
                 </div>
             </div>
         </div>
