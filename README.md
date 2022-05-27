@@ -41,6 +41,7 @@ Review system
 - Nate/Francis
 
 Add class history
+&
 About Us page
 - Kiara
 
