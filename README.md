@@ -1,4 +1,4 @@
-#Sprint 1
+# Sprint 1
 
 Home Page (Frontend Design)
 - Kiara
@@ -20,7 +20,7 @@ Tutor home page (Backend)
 
 ----
 
-#Sprint 2
+# Sprint 2
 
 Merge branches 
 
@@ -35,7 +35,7 @@ Add filtering functionality
 
 ----
 
-#Sprint 3
+# Sprint 3
 
 Review system
 - Nate/Francis
@@ -57,7 +57,7 @@ Messing DM (Extra)
 
 ----
 
-#Sprint 4
+# Sprint 4
 
 **Hosting**
 **Make presentation**
