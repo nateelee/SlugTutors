@@ -56,15 +56,7 @@ def index():
         classes=classes,
         get_tutor_class_history_url = get_tutor_class_history_url
     )
-'''
-db.define_table(
-    "history",
-    Field("tutor_id", "reference tutors"),
-    Field("coarse_name", requires=IS_NOT_EMPTY(), label="Class Name"),
-    Field("instructor", requires=IS_NOT_EMPTY()),
-    Field("quarter_taken", requires=IS_NOT_EMPTY()),
-)
-'''
+
 @action("get_tutor_class_history")
 @action.uses(db, auth)
 def get_tutor_class_history():
