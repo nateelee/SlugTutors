@@ -1,12 +1,29 @@
 [[extend 'layout.html']]
 
 <section class="section">
-  <div class="title">Your Class List</div>
+
+  <a class="button is-link is-pulled-right ml-2 mr-4" href="[[=URL('edit_tutor')]]">
+    <span class="icon">
+      <i class="fa fa-plus"></i>
+    </span>
+    <span>Edit your Profile</span>
+  </a>
+
+  <a class="button is-link is-pulled-right" href="[[=URL('class_history')]]">
+    <span class="icon">
+      <i class="fa fa-list-alt"></i>
+    </span>
+    <span>View Class History</span>
+  </a>
+
+  <h1 class="title ml-5 pl-1">Dashboard</h1>
+
   <!-- Complete -->
+
   <div class="container">
-    <table class="table is-striped is-fullwidth">
+    <table class="table is-striped mr-6 is-fullwidth">
       <tr>
-        <th>Class Name</th>
+        <th>You are offering:</th>
         <th></th>
       </tr>
       [[for c in classes: ]]
@@ -24,23 +41,16 @@
       [[pass]]
     </table>
   </div>
+  <br>
+  <a class="button is-link ml-5" href="[[=URL('tutor_add_class')]]">
+    <span class="icon"><i class="fa fa-plus"></i></span>
+    <span>Add Classes</span>
+  </a>
 </section>
 
 <div class="section">
-  <a class = "button is-success" href="[[=URL('back')]]">
+  <a class = "button is-warning ml-5" href="[[=URL('back')]]">
     <span class="icon"><i class="fa fa-fw fa-backward"></i></span>
     <span>Back to Home Page</span>
-  </a>
-
-  <a class="button is-success" href="[[=URL('edit_tutor')]]">
-    <span class="icon">
-      <i class="fa fa-plus"></i>
-    </span>
-    <span>Edit your Profile</span>
-  </a>
-
-  <a class="button is-success" href="[[=URL('tutor_add_class')]]">
-    <span class="icon"><i class="fa fa-plus"></i></span>
-    <span>Add Classes</span>
   </a>
 </div>
