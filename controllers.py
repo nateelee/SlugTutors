@@ -49,14 +49,30 @@ def index():
     classes = {c["id"]: c["class_name"] for c in db(db.classes).select()}
     get_tutors_url = URL("get_tutors", signer=url_signer)
     get_tutor_classes_url = URL("get_tutor_classes", signer=url_signer)
-
-    print(classes)
+    get_tutor_class_history_url = URL("get_tutor_class_history", signer=url_signer)
     return dict(
         get_tutors_url=get_tutors_url,
         get_tutor_classes_url=get_tutor_classes_url,
         classes=classes,
+        get_tutor_class_history_url = get_tutor_class_history_url
     )
-
+'''
+db.define_table(
+    "history",
+    Field("tutor_id", "reference tutors"),
+    Field("coarse_name", requires=IS_NOT_EMPTY(), label="Class Name"),
+    Field("instructor", requires=IS_NOT_EMPTY()),
+    Field("quarter_taken", requires=IS_NOT_EMPTY()),
+)
+'''
+@action("get_tutor_class_history")
+@action.uses(db, auth)
+def get_tutor_class_history():
+    tutor_id = int(request.params.get("tutor_id"))
+    class_history = db((db.history.tutor_id == tutor_id)).select()
+    print("breaj")
+    print(class_history)
+    return dict(class_history=class_history)
 
 @action("get_tutors")
 @action.uses(db, auth)
@@ -73,7 +89,7 @@ def get_tutors():
 
     tutor_list = db(q).select(db.tutors.ALL, groupby=db.tutors.id).as_list()
 
-    print(tutor_list)
+   
     return dict(tutor_list=tutor_list)
 
 

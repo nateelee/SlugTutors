@@ -141,8 +141,10 @@
                 </tr>
               </thead>
 
-              <tbody>
-                <td>Place Place Place</td>
+              <tbody v-for = "history in selected_tutor.class_history">
+                <td>{{history['coarse_name']}}</td>
+                <td>{{history['instructor']}}</td>
+                <td>{{history['quarter_taken']}}</td>
               </tbody>
 
             </table>
@@ -159,6 +161,7 @@
   <script>
     let get_tutors_url = "[[=XML(get_tutors_url)]]";
     let get_tutor_classes_url = "[[=XML(get_tutor_classes_url)]]";
+    let get_tutor_class_history_url = "[[=XML(get_tutor_class_history_url)]]";
     let classes = [[=XML(classes)]];
   </script>
   <script src="js/index.js"></script>
