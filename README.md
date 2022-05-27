@@ -76,4 +76,3 @@ Images
 
 Displaying how many people like posts/dislike posts
 - Francis
-
