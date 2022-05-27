@@ -51,6 +51,13 @@ db.define_table(
     Field("bio", "text", requires=IS_NOT_EMPTY()),
     Field("major", requires=IS_NOT_EMPTY()),
     Field("year", requires=IS_NOT_EMPTY()),
+    Field("Monday"),
+    Field("Tuesday"),
+    Field("Wednesday"),
+    Field("Thursday"),
+    Field("Friday"),
+    Field("Saturday"),
+    Field("Sunday"),
 )
 
 db.define_table(
