@@ -19,7 +19,7 @@ Warning: Fixtures MUST be declared with @action.uses({fixtures}) else your app w
 
 from collections import OrderedDict
 from itertools import groupby
-
+import time
 from py4web import action, request, abort, redirect, URL, Field
 from yatl.helpers import A
 from .common import (
@@ -230,7 +230,6 @@ def see_reviews(tutor_id=None):
     for t in tutor:
         tutor_name = t['name']
     current_user = db.auth_user.first_name
-  
     return dict(
         # This is the signed URL for the callback.
         current_user = current_user,
@@ -243,6 +242,7 @@ def see_reviews(tutor_id=None):
 
         get_rating_url = URL('get_rating', signer=url_signer),
         set_rating_url = URL('set_rating', signer=url_signer),
+        edit_contact_url = URL('edit_contact', signer=url_signer)
     )
 
 
@@ -258,18 +258,26 @@ def load_posts():
 
     the_tutor_id = int(request.params.get('the_tutor_id'))
     posts = db(db.post.tutor_being_rated == the_tutor_id).select().as_list()
-    
+    ratings =[]
     for post in posts:
         post['is_my_post'] = post.get('name') == full_name
         thumbs = db(db.thumb.post == post['id']).select()
+        if post['tutor_being_rated'] is not None and the_tutor_id is not None and (int(post['tutor_being_rated']) == int(the_tutor_id)):
+            # print("average is ", post['rating_number'])
+            ratings.append(post['rating_number'])
         for thumb in thumbs:
             thumb['rater_id'] = thumb.get('rater_id')
         my_thumb = db((db.thumb.post == post['id']) & (
             db.thumb.rater_id == get_user())).select().first()
 
         post['my_thumb'] = my_thumb.get('rating') if my_thumb is not None else 0  
-  
-    return dict(rows = posts)
+    average = round(sum(ratings)/len(ratings) if sum(ratings) !=0 else 0, 1)
+    if average == 0:
+        average = "unknown"
+    return dict(
+        rows = posts,
+        average = average,
+    )
 
 @action('add_post', method="POST")
 @action.uses(url_signer.verify(), db, auth.user)
@@ -279,15 +287,25 @@ def add_post():
     full_name = get_name(name)
   
     print(request.json.get('rating_number'))
+    tutor_being_rated = request.json.get('tutor_id')
     id = db.post.insert(
-        post_url=request.json.get('post_url'),
+        post_body=request.json.get('post_body'),
         name = full_name,
-        tutor_being_rated = request.json.get('tutor_id'),
+        tutor_being_rated = tutor_being_rated,
         rating_number = request.json.get('rating_number'),
     )
 
+    posts = db(db.post).select().as_list()
+    ratings = []
+    for post in posts:
+        if post['tutor_being_rated'] is not None and tutor_being_rated is not None and (int(post['tutor_being_rated']) == int(tutor_being_rated)):
+            ratings.append(post['rating_number'])
+    average = round(sum(ratings)/len(ratings) if sum(ratings) !=0 else 0, 1)
+    if average == 0:
+        average = "unknown"
     return dict(
         id=id,
+        average = average,
         name = full_name,
         email = email,
     )
@@ -297,8 +315,23 @@ def add_post():
 def delete_post():
     id = request.params.get('id')
     assert id is not None
+    p = db(db.post.id == id).select().first()
+    tutor = p["tutor_being_rated"]
     db(db.post.id == id).delete()
-    return "ok"
+    posts = db(db.post).select().as_list()
+    ratings = []
+    
+    for post in posts:
+        print("id is ", id, post['id'])
+        if post['tutor_being_rated'] is not None and tutor is not None and (int(post['tutor_being_rated']) == int(tutor)):
+            print("passed here")
+            ratings.append(post['rating_number'])
+    average = round(sum(ratings)/len(ratings) if sum(ratings) !=0 else 0, 1)
+    if average == 0:
+        average = "unknown"
+    return dict(
+        average = average,
+    )
 
 def get_name(name):
     first_name = name.first_name
@@ -340,3 +373,11 @@ def set_rating():
     return "ok" # Just to have some confirmation in the Network tab.
 
 
+@action('edit_contact', method="POST")
+@action.uses(url_signer.verify(), db)
+def edit_contact():
+    id = request.json.get('id')
+    value = request.json.get('value')
+    db(db.post.id == id).update(**{"post_body": value})
+    time.sleep(1)
+    return "ok"

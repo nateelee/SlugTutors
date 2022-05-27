@@ -58,7 +58,7 @@ db.define_table(
 
 db.define_table('post',
                 Field('name'),
-                Field('post_url'),
+                Field('post_body'),
                 Field('tutor_being_rated'),
                 Field('rating_number', 'integer', default = 0)
                 )

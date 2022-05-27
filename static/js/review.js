@@ -12,6 +12,7 @@ let init = (app) => {
         add_mode: false,
         post_content: "",
         rows: [],
+        average: 0,
         the_tutor_id : 0,
         rating_number: 0,
     };
@@ -26,6 +27,7 @@ let init = (app) => {
         rows.map((p) => {
             p.rating = 0;
             p.rater_id = "";
+            p.average = 0;
         })
     };
 
@@ -45,27 +47,29 @@ let init = (app) => {
     };
 
     app.decorate = (a) => {
-        a.map((e) => {
-            e._state = {post: "clean"};
+        a.forEach((e) => {
+            e._state = "clean";
             e._server_vals = {post: e.post};
         });
         return a;
     };
 
-    app.add_post = function (tutor_id) {
+    app.add_post = function () {
         axios.post(add_post_url,
             {   
                 tutor_id: app.vue.the_tutor_id,
-                post_url: app.vue.post_content,
+                post_body: app.vue.post_content,
                 rating_number: app.vue.rating_number,
                
             }).then(function (response) {
+            app.vue.average = response.data.average;
             app.vue.rows.push({
                 id: response.data.id,
-                post_url: app.vue.post_content,
+                post_body: app.vue.post_content,
                 name: response.data.name,
                 is_my_post: true,
                 rating_number: app.vue.rating_number,
+                _state:  "clean",
             });
             app.enumerate(app.vue.rows);
             app.reset_form();
@@ -81,6 +85,7 @@ let init = (app) => {
     app.delete_post = function(row_idx) {
         let id = app.vue.rows[row_idx].id;
         axios.get(delete_post_url, {params: {id: id}}).then(function (response) {
+            app.vue.average = response.data.average;
             for (let i = 0; i < app.vue.rows.length; i++) {
                 if (app.vue.rows[i].id === id) {
                     app.vue.rows.splice(i, 1);
@@ -95,6 +100,20 @@ let init = (app) => {
         app.vue.add_mode = new_status;
     };
 
+    app.start_edit = function (row_idx) {
+        app.vue.rows[row_idx]._state = "edit";
+    };
+
+    app.stop_edit = function (row_idx) {
+        let row = app.vue.rows[row_idx];
+        if (row._state === 'edit') {
+            row._state = "clean";
+            axios.post(edit_contact_url, {
+                id: row.id, value: row.post_body
+            })
+        }
+    };
+
     // We form the dictionary of all methods, so we can assign them
     // to the Vue app in a single blow.
     app.methods = {
@@ -103,6 +122,9 @@ let init = (app) => {
         delete_post: app.delete_post,
         get_rating: app.get_rating,
         set_rating: app.set_rating,
+        start_edit: app.start_edit,
+        stop_edit: app.stop_edit,
+        
     };
 
     // This creates the Vue instance.
@@ -121,6 +143,7 @@ let init = (app) => {
             app.enumerate(rows);
             app.complete(rows);
             app.vue.rows = rows;
+            app.vue.average = result.data.average
         })
         .then(() => {
             for (let r of app.vue.rows) {
@@ -128,6 +151,7 @@ let init = (app) => {
                     .then((result) => {
                         r.rater_id = result.data.rater_id;
                         r.rating = result.data.rating;
+                        // r.average = result.data.average
                     });
             }
         });

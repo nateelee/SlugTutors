@@ -9,6 +9,7 @@
 <div class="section" id="vue-target" v-cloak>
     <div class="container block">
         <h1 class="title">[[=tutor_name]]</h1>
+        <h1 class="title">{{average}}/5</h1>
     </div>
 
     <div v-if="add_mode" class="container block">
@@ -37,7 +38,7 @@
                 
             <div class="field">
                 <div v-if = "rating_number != 0" class="control">
-                    <input type="submit" @click="add_post(tutor_id)" value="Post" class="button is-primary">
+                    <input type="submit" @click="add_post()" value="Post" class="button is-primary">
                     <input type="submit" @click="set_add_status(false)" value="Cancel" class="button is-danger">
                 </div>
                 <div v-if = "rating_number == 0" class="control">
@@ -60,11 +61,15 @@
             <div v-for="r in rows" class="tile is-child box is-light">
                 <div class="container">
                     <div>{{r.rating_number}}/5</div>
-                    <strong>{{r.post_url}}</strong>
+                    <input type="text" class="input" v-model="r.post_body"
+                    :class="{'is-focused': r._state === 'edit',
+                           'is-static': r._state === 'clean'}"
+                    :readonly="r._state === 'clean'"
+                    @click="start_edit(r._idx)"
+                    @blur="stop_edit(r._idx)"
+                     />
                     <div class="is-size6 has-text-grey">{{r.name}}</div>
 
-                    <div>
-                    </div>
                     <div class="is-flex is-justify-content-space-between width: 100%">
                         <div>
                             <span class="has-text-info" v-on:mouseenter="">
@@ -115,6 +120,7 @@
     let current_user = "[[=current_user]]";
     let tutor_name = "[[=tutor_name]]";
     let tutor_id = "[[=tutor_id]]";
+    let edit_contact_url = "[[=XML(edit_contact_url)]]"
     
 </script>
 <script src="js/review.js"></script>
