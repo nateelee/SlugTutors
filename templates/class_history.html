@@ -1,0 +1,44 @@
+[[extend 'layout.html']]
+
+<section class="section">
+    <div class="title ml-5">Your Class History</div>
+    <!-- Complete -->
+    <div class="container">
+        <table class="table is-striped is-fullwidth">
+            <tr>
+                <th>Class Name</th>
+                <th>Instructor</th>
+                <th>Quarter Taken</th>
+                <th></th>
+            </tr>
+            [[for row in rows:]]
+            <tr>
+                <td>[[=row.coarse_name]]</td>
+                <td>[[=row.instructor]]</td>
+                <td>[[=row.quarter_taken]]</td>
+
+                <td>
+                    <a class="button is-danger" href="[[=URL('delete_class_hist', row.id)]]">
+                        <span class="icon"><i class="fa fa-fw fa-trash"></i></span>
+                    </a>
+                </td>
+            </tr>
+            [[pass]]
+        </table>
+    </div>
+    <br>
+    <a class="button is-link ml-5" href="[[=URL('tutor_add_history')]]">
+        <span class="icon">
+            <i class="fa fa-plus"></i>
+        </span>
+        <span>Add to Class History</span>
+    </a>
+
+</section>
+
+<div class="section">
+    <a class = "button is-warning ml-5" href="[[=URL('tutor_home')]]">
+        <span class="icon"><i class="fa fa-fw fa-backward"></i></span>
+        <span>Back to Dashboard</span>
+    </a>
+</div>
