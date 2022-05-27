@@ -215,7 +215,7 @@ def back():
 
 
 @action('aboutus')
-@action.uses('aboutus.html', auth.user)
+@action.uses('aboutus.html')
 def aboutus():
     return dict()
 
