@@ -258,3 +258,17 @@ def class_history():
         redirect(URL("tutor_home"))
 
     return dict(rows=rows)
+
+
+@action('delete_class_hist/<class_id:int>')
+@action.uses(db, auth.user)
+def delete_class_hist(class_id=None):
+    assert class_id is not None
+    tutor_id = get_tutor()
+    db(
+        (db.history.id == class_id)
+        & (db.history.tutor_id == tutor_id)
+    ).delete()
+    redirect(URL("class_history"))
+    return dict()
+
