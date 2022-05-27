@@ -22,7 +22,7 @@ Tutor home page (Backend)
 
 # Sprint 2
 
-Merge branches 
+**Merge branches** 
 
 Connect backend/ DB to homepage
 - Raghav/Kiara 
