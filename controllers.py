@@ -146,10 +146,17 @@ def create_tutor():
 
     form = Form(
         [
-            Field("base_rate"),
+            Field("base_rate", placeholder="$15"),
             Field("bio"),
             Field("major"),
-            Field("year"),
+            Field("year", placeholder="4th year"),
+            Field("Monday", placeholder="1 - 2 PM"),
+            Field("Tuesday"),
+            Field("Wednesday"),
+            Field("Thursday"),
+            Field("Friday"),
+            Field("Saturday"),
+            Field("Sunday"),
         ],
         deletable=False,
         csrf_session=session,
@@ -163,11 +170,17 @@ def create_tutor():
             year=form.vars["year"],
             rate=form.vars["base_rate"],
             bio=form.vars["bio"],
+            Monday=form.vars["Monday"],
+            Tuesday=form.vars["Tuesday"],
+            Wednesday=form.vars["Wednesday"],
+            Thursday=form.vars["Thursday"],
+            Friday=form.vars["Friday"],
+            Saturday=form.vars["Saturday"],
+            Sunday=form.vars["Sunday"],
         )
         redirect(URL("tutor_home"))
 
     return dict(form=form)
-
 
 # edit a tutor profile
 @action("edit_tutor", method=["GET", "POST"])
