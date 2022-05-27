@@ -51,10 +51,15 @@ db.define_table(
     Field("bio", "text", requires=IS_NOT_EMPTY()),
     Field("major", requires=IS_NOT_EMPTY()),
     Field("year", requires=IS_NOT_EMPTY()),
-    Field("history", label = ("Class History")),
 )
 
-
+db.define_table(
+    "history",
+    Field("tutor_id", "reference tutors"),
+    Field("coarse_name", requires=IS_NOT_EMPTY(), label="Class Name"),
+    Field("instructor", requires=IS_NOT_EMPTY()),
+    Field("quarter_taken", requires=IS_NOT_EMPTY()),
+)
 
 db.define_table('post',
                 Field('name'),
@@ -95,6 +100,8 @@ db.tutors.id.writable = False
 db.tutors.email.writable = False
 db.classes.id.readable = False
 db.classes.id.writable = False
+db.history.id.readable = False
+db.history.id.writable = False
 
 CLASSES = os.path.join(APP_FOLDER, "data", "classes.json")
 

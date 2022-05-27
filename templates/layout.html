@@ -16,13 +16,12 @@
 <nav class="navbar is-warning pl-6" role="navigation" aria-label="main navigation">
     <div class="navbar-brand">
         <a class="navbar-item pr-6" href="[[=URL('index')]]">
-<!--          <img class="logo" width="150" src="images/sammy.png">-->
-          LOGO
+            <img src="/static/images/STL.png">
         </a>
 
         <a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false"
-           data-target="the-navbar-menu"
-           onclick="this.classList.toggle('is-active');document.getElementById(this.dataset.target).classList.toggle('is-active');">
+            data-target="the-navbar-menu"
+            onclick="this.classList.toggle('is-active');document.getElementById(this.dataset.target).classList.toggle('is-active');">
             <span aria-hidden="true"></span>
             <span aria-hidden="true"></span>
             <span aria-hidden="true"></span>
@@ -31,9 +30,7 @@
 
     <div id="the-navbar-menu" class="navbar-menu">
         <div class="navbar-start">
-            <a class="navbar-item pr-6" href="https://bulma.io/">
-              About Us
-            </a>
+            <a class="navbar-item pr-6" href="[[=URL('aboutus')]]">About Us</a>
 
             <div class="navbar-item has-dropdown pr-6 is-hoverable">
                 <a class="navbar-link">
@@ -41,17 +38,11 @@
                 </a>
 
                 <div class="navbar-dropdown">
-                    <a class="navbar-item" href="https://lss.ucsc.edu/">
-                      LSS
-                    </a>
-                    <a class="navbar-item" href="https://ace.science.ucsc.edu/">
-                      ACE
-                    </a>
-                    <a class="navbar-item" href="https://lss.ucsc.edu/tutor-trac/tutor-trac-20-21.html/">
-                      TutorTrack
-                    </a>
+                    <a class="navbar-item" href="https://lss.ucsc.edu/">LSS</a>
+                    <a class="navbar-item" href="https://ace.science.ucsc.edu/">ACE</a>
+                    <a class="navbar-item" href="https://lss.ucsc.edu/tutor-trac/tutor-trac-20-21.html/">TutorTrack</a>
                 </div>
-          </div>
+            </div>
     </div>
 
         <div class="navbar-end">

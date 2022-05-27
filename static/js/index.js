@@ -52,6 +52,7 @@ let init = (app) => {
 
         a.map((e) => {
             e.classes = [];
+            e.class_history = [];
         });
         return a;
     };
@@ -89,6 +90,14 @@ let init = (app) => {
                         .then(function (result) {
                             classes_tutored = result.data.classes_tutored;
                             tutor.classes = classes_tutored;
+                        });
+                    axios
+                        .get(get_tutor_class_history_url, {
+                            params: { tutor_id: tutor.id },
+                        })
+                        .then(function (result) {
+                            class_history = result.data.class_history;
+                            tutor.class_history = class_history;
                         });
                 }
             });

@@ -50,13 +50,20 @@ def index():
     classes = {c["id"]: c["class_name"] for c in db(db.classes).select()}
     get_tutors_url = URL("get_tutors", signer=url_signer)
     get_tutor_classes_url = URL("get_tutor_classes", signer=url_signer)
-   
+    get_tutor_class_history_url = URL("get_tutor_class_history", signer=url_signer)
     return dict(
         get_tutors_url=get_tutors_url,
         get_tutor_classes_url=get_tutor_classes_url,
-        # toggle_select_url=toggle_select_url,
+        get_tutor_class_history_url = get_tutor_class_history_url,
         classes=classes,
     )
+
+@action("get_tutor_class_history")
+@action.uses(db, auth)
+def get_tutor_class_history():
+    tutor_id = int(request.params.get("tutor_id"))
+    class_history = db((db.history.tutor_id == tutor_id)).select()
+    return dict(class_history=class_history)
 
 @action("get_tutors")
 @action.uses(db, auth)
@@ -143,7 +150,6 @@ def create_tutor():
             Field("bio"),
             Field("major"),
             Field("year"),
-            Field("class_history"),
         ],
         deletable=False,
         csrf_session=session,
@@ -157,7 +163,6 @@ def create_tutor():
             year=form.vars["year"],
             rate=form.vars["base_rate"],
             bio=form.vars["bio"],
-            history=form.vars["class_history"],
         )
         redirect(URL("tutor_home"))
 
@@ -263,7 +268,7 @@ def load_posts():
         post['is_my_post'] = post.get('name') == full_name
         thumbs = db(db.thumb.post == post['id']).select()
         if post['tutor_being_rated'] is not None and the_tutor_id is not None and (int(post['tutor_being_rated']) == int(the_tutor_id)):
-            # print("average is ", post['rating_number'])
+            
             ratings.append(post['rating_number'])
         for thumb in thumbs:
             thumb['rater_id'] = thumb.get('rater_id')
@@ -273,7 +278,7 @@ def load_posts():
         post['my_thumb'] = my_thumb.get('rating') if my_thumb is not None else 0  
     average = round(sum(ratings)/len(ratings) if sum(ratings) !=0 else 0, 1)
     if average == 0:
-        average = "unknown"
+        average = ""
     return dict(
         rows = posts,
         average = average,
@@ -285,8 +290,7 @@ def add_post():
     email = db(db.auth_user.email == get_user_email()).select().first()
     name = db(db.auth_user.id == get_user()).select().first()
     full_name = get_name(name)
-  
-    print(request.json.get('rating_number'))
+
     tutor_being_rated = request.json.get('tutor_id')
     id = db.post.insert(
         post_body=request.json.get('post_body'),
@@ -302,7 +306,7 @@ def add_post():
             ratings.append(post['rating_number'])
     average = round(sum(ratings)/len(ratings) if sum(ratings) !=0 else 0, 1)
     if average == 0:
-        average = "unknown"
+        average = ""
     return dict(
         id=id,
         average = average,
@@ -322,13 +326,12 @@ def delete_post():
     ratings = []
     
     for post in posts:
-        print("id is ", id, post['id'])
         if post['tutor_being_rated'] is not None and tutor is not None and (int(post['tutor_being_rated']) == int(tutor)):
-            print("passed here")
+          
             ratings.append(post['rating_number'])
     average = round(sum(ratings)/len(ratings) if sum(ratings) !=0 else 0, 1)
     if average == 0:
-        average = "unknown"
+        average = ""
     return dict(
         average = average,
     )
@@ -381,3 +384,61 @@ def edit_contact():
     db(db.post.id == id).update(**{"post_body": value})
     time.sleep(1)
     return "ok"
+
+@action('aboutus')
+@action.uses('aboutus.html')
+def aboutus():
+    return dict()
+
+
+@action("tutor_add_history", method=["GET", "POST"])
+@action.uses("tutor_add_history.html", db, auth.user)
+def tutor_add_history():
+    tutor_id = get_tutor()
+    db((db.history.tutor_id == tutor_id)).select()
+
+    form = Form(
+        [
+            Field("class_name"),
+            Field("instructor"),
+            Field("quarter_taken"),
+        ],
+        deletable=False,
+        csrf_session=session,
+        formstyle=FormStyleBulma,
+    )
+
+    if form.accepted:
+        db.history.update_or_insert(
+            tutor_id=get_tutor().id,
+            coarse_name=form.vars["class_name"],
+            instructor=form.vars["instructor"],
+            quarter_taken=form.vars["quarter_taken"]
+        )
+        redirect(URL("class_history"))
+
+    return dict(form=form)
+
+
+@action("class_history", method=["GET", "POST"])
+@action.uses("class_history.html", db, auth.user)
+def class_history():
+    tutor_id = get_tutor()
+    rows = db((db.history.tutor_id == tutor_id)).select()
+    if tutor_id is None:
+        redirect(URL("tutor_home"))
+
+    return dict(rows=rows)
+
+
+@action('delete_class_hist/<class_id:int>')
+@action.uses(db, auth.user)
+def delete_class_hist(class_id=None):
+    assert class_id is not None
+    tutor_id = get_tutor()
+    db(
+        (db.history.id == class_id)
+        & (db.history.tutor_id == tutor_id)
+    ).delete()
+    redirect(URL("class_history"))
+    return dict()
