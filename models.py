@@ -8,6 +8,7 @@ import os
 from .common import db, Field, auth
 from .settings import APP_FOLDER
 from pydal.validators import *
+from distutils.command.upload import upload
 
 
 def get_tutor():
@@ -51,6 +52,7 @@ db.define_table(
     Field("bio", "text", requires=IS_NOT_EMPTY()),
     Field("major", requires=IS_NOT_EMPTY()),
     Field("year", requires=IS_NOT_EMPTY()),
+    Field("thumbnail", 'upload', label="Avatar"),
 )
 
 db.define_table(
