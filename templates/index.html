@@ -1,6 +1,11 @@
 [[extend 'layout.html']]
+<style>
+  [v-cloak] {
+       display: none;
+  }
+</style>
 
-<div class="section" id="vue-target">
+<div class="section" id="vue-target" v-cloak>
 
   <a class="button is-link mr-6 is-pulled-right" href="[[=URL('tutor_home')]]">
     <span class="icon">
@@ -55,10 +60,16 @@
           <div class="card-content">
             <div class="media">
               <div class="media-left">
-                <figure class="image is-48x48">
+                <figure v-if = "!tutor.thumbnail" class="image is-48x48">
                   <img
                     src="https://bulma.io/images/placeholders/96x96.png"
                     alt="Placeholder image"
+                  />
+                </figure>
+                <figure v-if = "tutor.thumbnail" class="image is-48x48">
+                  <img
+                    :src="`[[=URL('thumbnail') ]]/${tutor.id}`"
+                    alt="Tutor image"
                   />
                 </figure>
               </div>
@@ -84,10 +95,16 @@
         <div class="card-content">
           <div class="media">
             <div class="media-left">
-              <figure class="image is-48x48">
+              <figure v-if = "!selected_tutor.thumbnail" class="image is-48x48">
                 <img
                   src="https://bulma.io/images/placeholders/96x96.png"
                   alt="Placeholder image"
+                />
+              </figure>
+              <figure v-if = "selected_tutor.thumbnail" class="image is-48x48">
+                <img
+                  :src="`[[=URL('thumbnail') ]]/${selected_tutor.id}`"
+                  alt="Tutor image"
                 />
               </figure>
             </div>

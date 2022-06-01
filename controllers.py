@@ -19,8 +19,10 @@ Warning: Fixtures MUST be declared with @action.uses({fixtures}) else your app w
 
 from collections import OrderedDict
 from itertools import groupby
+import os
 import time
-from py4web import action, request, abort, redirect, URL, Field
+from py4web import action, request, abort, redirect, URL, Field, HTTP
+from ombott import static_file, static_stream
 from yatl.helpers import A
 from .common import (
     db,
@@ -150,6 +152,7 @@ def create_tutor():
             Field("bio"),
             Field("major"),
             Field("year"),
+            Field("thumbnail", 'upload', label="Avatar"),
         ],
         deletable=False,
         csrf_session=session,
@@ -163,6 +166,7 @@ def create_tutor():
             year=form.vars["year"],
             rate=form.vars["base_rate"],
             bio=form.vars["bio"],
+            thumbnail=form.vars["thumbnail"],
         )
         redirect(URL("tutor_home"))
 
@@ -442,3 +446,16 @@ def delete_class_hist(class_id=None):
     ).delete()
     redirect(URL("class_history"))
     return dict()
+
+@action("thumbnail/<tutor_id:int>")
+@action.uses(db)
+def thumbnail(tutor_id=None):
+    assert tutor_id is not None
+
+    t = db.tutors[tutor_id]
+    if not t:
+        raise HTTP(404)
+
+    _, f = db.tutors.thumbnail.retrieve(t.thumbnail)
+    path, filename = os.path.dirname(f.name), os.path.basename(f.name)
+    return static_file(filename, path, mimetype="auto")
