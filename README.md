@@ -69,12 +69,12 @@ Editing rating in review system
 - Nate
 
 Availability form 
-- Nate/Kiara
+- Kiara
 
 Bug when there no classes, change the way rate is displayed, unattach it from the class 
 - ?
 
-Images 
+Images for About Us page 
 - Kiara/Nate
 
 Displaying how many people like posts/dislike posts
