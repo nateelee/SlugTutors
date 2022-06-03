@@ -53,6 +53,13 @@ db.define_table(
     Field("major", requires=IS_NOT_EMPTY()),
     Field("year", requires=IS_NOT_EMPTY()),
     Field("thumbnail", 'upload', label="Avatar"),
+    Field("Monday"),
+    Field("Tuesday"),
+    Field("Wednesday"),
+    Field("Thursday"),
+    Field("Friday"),
+    Field("Saturday"),
+    Field("Sunday"),
 )
 
 db.define_table(

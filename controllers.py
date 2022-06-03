@@ -152,6 +152,13 @@ def create_tutor():
             Field("bio"),
             Field("major"),
             Field("year"),
+            Field("Monday"),
+            Field("Tuesday"),
+            Field("Wednesday"),
+            Field("Thursday"),
+            Field("Friday"),
+            Field("Saturday"),
+            Field("Sunday"),
             Field("thumbnail", 'upload', label="Avatar"),
         ],
         deletable=False,
@@ -167,6 +174,13 @@ def create_tutor():
             rate=form.vars["base_rate"],
             bio=form.vars["bio"],
             thumbnail=form.vars["thumbnail"],
+            Monday=form.vars["Monday"],
+            Tuesday=form.vars["Tuesday"],
+            Wednesday=form.vars["Wednesday"],
+            Thursday=form.vars["Thursday"],
+            Friday=form.vars["Friday"],
+            Saturday=form.vars["Saturday"],
+            Sunday=form.vars["Sunday"],
         )
         redirect(URL("tutor_home"))
 
