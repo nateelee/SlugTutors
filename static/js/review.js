@@ -28,6 +28,8 @@ let init = (app) => {
             p.rating = 0;
             p.rater_id = "";
             p.average = 0;
+            // p.num_likes = 0;
+            // p.num_dislikes = 0;
         })
     };
 
@@ -38,10 +40,33 @@ let init = (app) => {
         app.data.thumbs = {...app.data.thumbs, [postid]: ratings}
     };
 
-    app.set_rating = (postid, rating) => {
-        axios.post(set_rating_url, {post_id: postid, rating }).then(response => response.data).then(results => {
+    app.set_rating = (postid, rating, previous_rating) => {
+        const obj = app.vue.rows.find(element => element.id == postid)
+        if (rating == -1){
+            if (previous_rating == 1){
+                obj.num_likes--;
+            }
+            obj.num_dislikes++;
+        }
+        else if (rating == 1){
+            if (previous_rating == -1){
+                obj.num_dislikes--;
+            }
+            obj.num_likes++;
+        }
+        else if (rating == 0){
+            if (previous_rating == -1){
+                obj.num_dislikes--;
+            }
+            else if (previous_rating == 1){
+                obj.num_likes--;
+            }
+        }
+        app.vue.rows = [...app.vue.rows]
+        axios.post(set_rating_url, {post_id: postid, rating, num_likes: obj.num_likes, num_dislikes: obj.num_dislikes }).then(response => response.data).then(results => {
             app.data.rows = [...app.data.rows.map(post => post.id == postid ? {...post, my_thumb: rating}:post)]
             app.data.thumbs = {...app.data.thumbs, [postid]: results}
+            
         })
         
     };
@@ -70,6 +95,8 @@ let init = (app) => {
                 is_my_post: true,
                 rating_number: app.vue.rating_number,
                 _state:  "clean",
+                num_likes: 0,
+                num_dislikes: 0,
             });
             app.enumerate(app.vue.rows);
             app.reset_form();
@@ -139,6 +166,7 @@ let init = (app) => {
         axios.get(load_posts_url,{ params: {the_tutor_id : tutor_id}})
         .then((result) => {
             let rows = result.data.rows;
+            console.log("here", rows);
             app.vue.rows = app.decorate(app.enumerate(result.data.rows));
             app.enumerate(rows);
             app.complete(rows);
@@ -151,9 +179,9 @@ let init = (app) => {
                     .then((result) => {
                         r.rater_id = result.data.rater_id;
                         r.rating = result.data.rating;
-                        // r.average = result.data.average
                     });
             }
+
         });
     };
 

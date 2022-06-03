@@ -5,105 +5,143 @@
         display: none;
     }
 </style>
-<section class="section"></section>
-<div class="section" id="vue-target" v-cloak>
-    <div class="container block">
-        <h1 class="title">[[=tutor_name]]</h1>
-        <h1 class="title">{{average}}/5</h1>
-    </div>
-
-    <div v-if="add_mode" class="container block">
-        <!-- <div class="title">Add Contact</div> -->
-        
-        <div class="form">
-            <div class = "field block">
-                <div class = "">Rate out of 5</div>
-                <div class="select is-info is-medium">
-                    <select v-model = "rating_number">
-                        <option value = "5">5</option>
-                        <option value = "4">4</option>
-                        <option value = "3">3</option>
-                        <option value = "2">2</option>
-                        <option value = "1">1</option>
-                    </select>
-                </div>
-                 
-            </div>
-            <div class="field">
-                <div class="control">
-                    <textarea type="text" v-model="post_content" class="textarea"
-                        placeholder="Enter a new post here"></textarea>
-                </div>
-            </div>
-                
-            <div class="field">
-                <div v-if = "rating_number != 0" class="control">
-                    <input type="submit" @click="add_post()" value="Post" class="button is-primary">
-                    <input type="submit" @click="set_add_status(false)" value="Cancel" class="button is-danger">
-                </div>
-                <div v-if = "rating_number == 0" class="control">
-                    <div>Please enter a proper rating before submitting</div>
-                    <input type="submit" @click="set_add_status(false)" value="Cancel" class="button is-danger">
-                </div>
-            </div>
+<section class="section">
+    <div class="section" id="vue-target" v-cloak>
+        <div class="container block">
+            <h1 class="title is-size-1">[[=tutor_name]]</h1>
+            <h1 class="title is-size-1">{{average}}/5</h1>
         </div>
-    </div>
 
+        <div v-if="add_mode" class="container block">
+            <!-- <div class="title">Add Contact</div> -->
+            <div class="form">
+                <div class="field block">
+                    <div class="">Rate out of 5</div>
+                    <div class="select is-info is-medium">
+                        <select v-model="rating_number">
+                            <option value="5">5</option>
+                            <option value="4">4</option>
+                            <option value="3">3</option>
+                            <option value="2">2</option>
+                            <option value="1">1</option>
+                        </select>
+                    </div>
 
-    <div v-if="!add_mode" class="container block">
+                </div>
+                <div class="field">
+                    <div class="control">
+                        <textarea type="text" v-model="post_content" class="textarea"
+                            placeholder="Enter a new post here"></textarea>
+                    </div>
+                </div>
 
-        <button @click="set_add_status(true)" class="button is-warning">
-            <a class="has-text-black">Rate [[=tutor_name]]</a>
-        </button>
-    </div>
-    <div class="tile is ancestor">
-        <div class="tile is-vertical">
-            <div v-for="r in rows" class="tile is-child box is-light">
-                <div class="container">
-                    <div>{{r.rating_number}}/5</div>
-                    <input type="text" class="input" v-model="r.post_body"
-                    :class="{'is-focused': r._state === 'edit',
-                           'is-static': r._state === 'clean'}"
-                    :readonly="r._state === 'clean'"
-                    @click="start_edit(r._idx)"
-                    @blur="stop_edit(r._idx)"
-                     />
-                    <div class="is-size6 has-text-grey">{{r.name}}</div>
-
-                    <div class="is-flex is-justify-content-space-between width: 100%">
-                        <div>
-                            <span class="has-text-info" v-on:mouseenter="">
-                                <span class="has-text-info">
-                                    <i v-if="r.my_thumb==1" class="fa fa-thumbs-up is-link is-size-4"
-                                        v-on:click="set_rating(r.id, 0)"></i>
-                                    <i v-else class="fa fa-thumbs-o-up is-link is-size-4"
-                                        v-on:click="set_rating(r.id, 1)"></i>
-                                </span>
-                                <span class="has-text-info">
-                                    <i v-if="r.my_thumb==-1"
-                                        class="fa fa-flip-horizontal fa-thumbs-down is-link is-size-4"
-                                        v-on:click="set_rating(r.id, 0)"></i>
-                                    <i v-else class="fa fa-flip-horizontal fa-thumbs-o-down is-link is-size-4"
-                                        v-on:click="set_rating(r.id, -1)"></i>
-                                </span>
-                            </span>
-                            {{r.rater}}
-                        </div>
-                        <span class="has-text-danger is-size-4" v-if="r.is_my_post" v-on:click="delete_post(r._idx)">
-                            <i class="fa fa-trash "></i>
-                        </span>
-
+                <div class="field">
+                    <div v-if="rating_number != 0" class="control">
+                        <input type="submit" @click="add_post()" value="Post" class="button is-primary">
+                        <input type="submit" @click="set_add_status(false)" value="Cancel" class="button is-danger">
+                    </div>
+                    <div v-if="rating_number == 0" class="control">
+                        <div>Please enter a proper rating before submitting</div>
+                        <input type="submit" @click="set_add_status(false)" value="Cancel" class="button is-danger">
                     </div>
                 </div>
             </div>
         </div>
+
+
+        <div v-if="!add_mode" class="container block">
+
+            <button @click="set_add_status(true)" class="button is-warning">
+                <a class="has-text-black">Rate [[=tutor_name]]</a>
+            </button>
+        </div>
+        <div class="tile is ancestor">
+            <div class="tile is-vertical">
+
+                <div v-for="r in rows" class="tile is-child box is-light">
+                    <article class="media">
+                        <div class="media-left">
+                            <div class="has-text-black">
+                                <span v-if="r.rating_number == 5 || r.rating_number == 4"
+                                    class="tag has-text-black has-background-warning is-size-4">
+                                    {{r.rating_number}}/5
+                                </span> 
+                                <strong v-else-if="r.rating_number == 3" class="tag has-text-black has-background-primary is-size-4">
+                                    {{r.rating_number}}/5
+                                </strong>
+                                <strong v-else-if="r.rating_number == 2" class="tag has-text-black has-background-warning is-size-4">
+                                    {{r.rating_number}}/5
+                                </strong>
+                                <strong v-else-if="r.rating_number == 1" class="tag has-text-black has-background-danger is-size-4">
+                                    {{r.rating_number}}/5
+                                </strong>
+
+                            </div>
+                        </div>
+                        <div class="media-content">
+                            <div class="content">
+                                <p>
+                                    <strong>{{r.name}}</strong>
+                                    <small>
+                                        <span v-if="r.post_date">{{r.post_date.split(" ")[0]}}</span>
+                                        <span v-else>now</span>
+                                    </small>
+                                    <br>
+                                    <textarea type="text" class="textarea" rows="4" v-model="r.post_body" :class="{'is-focused': r._state === 'edit',
+                                            'is-white': r._state === 'clean'}" :readonly="r._state === 'clean'"
+                                        @click="start_edit(r._idx)" @blur="stop_edit(r._idx)"></textarea>
+                                    <br>
+                                </p>
+                            </div>
+                            <div class="is-flex is-justify-content-space-between width: 100%">
+                                <div>
+                                    <span class="has-text-black" v-on:mouseenter="">
+                                        <span class="has-text-dark">
+                                            <i v-if="r.my_thumb==1" class="fa fa-thumbs-up is-size-4"
+                                                v-on:click="set_rating(r.id, 0, 1)"></i>
+                                            <i v-else-if="r.my_thumb==-1" class="fa fa-thumbs-o-up is-size-4"
+                                                v-on:click="set_rating(r.id, 1, -1)"></i>
+                                            <i v-else class="fa fa-thumbs-o-up is-size-4"
+                                                v-on:click="set_rating(r.id, 1, 0)"></i>
+                                        </span>
+                                        <span>{{r.num_likes}}</span>
+                                        <span class="has-text-dark">
+                                            <i v-if="r.my_thumb==-1"
+                                                class="fa fa-flip-horizontal fa-thumbs-down is-size-4"
+                                                v-on:click="set_rating(r.id, 0, -1)"></i>
+                                            <i v-else-if="r.my_thumb==1"
+                                                class="fa fa-flip-horizontal fa-thumbs-o-down is-size-4"
+                                                v-on:click="set_rating(r.id, -1, 1)"></i>
+                                            <i v-else class="fa fa-flip-horizontal fa-thumbs-o-down is-size-4"
+                                                v-on:click="set_rating(r.id, -1, 0)"></i>
+                                        </span>
+                                        <span>{{r.num_dislikes}}</span>
+                                    </span>
+                                    {{r.rater}}
+                                </div>
+                                <span v-if="r.is_my_post"
+                                v-on:click="delete_post(r._idx)">
+                                    <button class="delete is-large"></button>
+                                </span>
+                                <!-- <span class="has-text-danger is-size-4" v-if="r.is_my_post"
+                                    v-on:click="delete_post(r._idx)">
+                                    <i class="fa fa-trash "></i>
+                                </span> -->
+                            </div>
+                    </article>
+                </div>
+            </div>
+        </div>
     </div>
-    </section>
+    </div>
+    </div>
+    </div>
+</section>
 
 
 
 
-</div>
+
 
 
 [[block page_scripts]]
@@ -121,7 +159,7 @@
     let tutor_name = "[[=tutor_name]]";
     let tutor_id = "[[=tutor_id]]";
     let edit_contact_url = "[[=XML(edit_contact_url)]]"
-    
+
 </script>
 <script src="js/review.js"></script>
 [[end]]

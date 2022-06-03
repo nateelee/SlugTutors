@@ -19,8 +19,10 @@ Warning: Fixtures MUST be declared with @action.uses({fixtures}) else your app w
 
 from collections import OrderedDict
 from itertools import groupby
+import os
 import time
-from py4web import action, request, abort, redirect, URL, Field
+from py4web import action, request, abort, redirect, URL, Field, HTTP
+from ombott import static_file, static_stream
 from yatl.helpers import A
 from .common import (
     db,
@@ -150,6 +152,14 @@ def create_tutor():
             Field("bio"),
             Field("major"),
             Field("year"),
+            Field("Monday"),
+            Field("Tuesday"),
+            Field("Wednesday"),
+            Field("Thursday"),
+            Field("Friday"),
+            Field("Saturday"),
+            Field("Sunday"),
+            Field("thumbnail", 'upload', label="Avatar"),
         ],
         deletable=False,
         csrf_session=session,
@@ -163,6 +173,14 @@ def create_tutor():
             year=form.vars["year"],
             rate=form.vars["base_rate"],
             bio=form.vars["bio"],
+            thumbnail=form.vars["thumbnail"],
+            Monday=form.vars["Monday"],
+            Tuesday=form.vars["Tuesday"],
+            Wednesday=form.vars["Wednesday"],
+            Thursday=form.vars["Thursday"],
+            Friday=form.vars["Friday"],
+            Saturday=form.vars["Saturday"],
+            Sunday=form.vars["Sunday"],
         )
         redirect(URL("tutor_home"))
 
@@ -264,13 +282,16 @@ def load_posts():
     the_tutor_id = int(request.params.get('the_tutor_id'))
     posts = db(db.post.tutor_being_rated == the_tutor_id).select().as_list()
     ratings =[]
+    
     for post in posts:
         post['is_my_post'] = post.get('name') == full_name
         thumbs = db(db.thumb.post == post['id']).select()
+        # print("post is ", post)
         if post['tutor_being_rated'] is not None and the_tutor_id is not None and (int(post['tutor_being_rated']) == int(the_tutor_id)):
             
             ratings.append(post['rating_number'])
         for thumb in thumbs:
+            
             thumb['rater_id'] = thumb.get('rater_id')
         my_thumb = db((db.thumb.post == post['id']) & (
             db.thumb.rater_id == get_user())).select().first()
@@ -292,13 +313,16 @@ def add_post():
     full_name = get_name(name)
 
     tutor_being_rated = request.json.get('tutor_id')
-    id = db.post.insert(
+    id = db.post.update_or_insert(
         post_body=request.json.get('post_body'),
         name = full_name,
         tutor_being_rated = tutor_being_rated,
         rating_number = request.json.get('rating_number'),
     )
-
+    # db.thumb.insert(
+    #     num_likes = 0,
+    #     num_dislikes = 0,
+    # )
     posts = db(db.post).select().as_list()
     ratings = []
     for post in posts:
@@ -360,6 +384,8 @@ def set_rating():
     """Sets the rating for an image."""
     post_id = request.json.get('post_id')
     rating = request.json.get('rating')
+    num_likes = request.json.get('num_likes')
+    num_dislikes = request.json.get('num_dislikes')
     assert post_id is not None and rating is not None
     name = db(db.auth_user.id == get_user()).select().first()
     full_name = get_name(name)
@@ -371,7 +397,13 @@ def set_rating():
         post=post_id,
         rater_id=get_user(),
         rating=rating,
-        rater_name = full_name
+        rater_name = full_name,
+        
+    )
+    db.post.update_or_insert(
+        ((db.post.id == post_id)),
+        num_likes = num_likes,
+        num_dislikes = num_dislikes
     )
     return "ok" # Just to have some confirmation in the Network tab.
 
@@ -442,3 +474,16 @@ def delete_class_hist(class_id=None):
     ).delete()
     redirect(URL("class_history"))
     return dict()
+
+@action("thumbnail/<tutor_id:int>")
+@action.uses(db)
+def thumbnail(tutor_id=None):
+    assert tutor_id is not None
+
+    t = db.tutors[tutor_id]
+    if not t:
+        raise HTTP(404)
+
+    _, f = db.tutors.thumbnail.retrieve(t.thumbnail)
+    path, filename = os.path.dirname(f.name), os.path.basename(f.name)
+    return static_file(filename, path, mimetype="auto")

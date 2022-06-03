@@ -8,6 +8,7 @@ import os
 from .common import db, Field, auth
 from .settings import APP_FOLDER
 from pydal.validators import *
+from distutils.command.upload import upload
 
 
 def get_tutor():
@@ -51,6 +52,14 @@ db.define_table(
     Field("bio", "text", requires=IS_NOT_EMPTY()),
     Field("major", requires=IS_NOT_EMPTY()),
     Field("year", requires=IS_NOT_EMPTY()),
+    Field("thumbnail", 'upload', label="Avatar"),
+    Field("Monday"),
+    Field("Tuesday"),
+    Field("Wednesday"),
+    Field("Thursday"),
+    Field("Friday"),
+    Field("Saturday"),
+    Field("Sunday"),
 )
 
 db.define_table(
@@ -65,13 +74,17 @@ db.define_table('post',
                 Field('name'),
                 Field('post_body'),
                 Field('tutor_being_rated'),
-                Field('rating_number', 'integer', default = 0)
+                Field('rating_number', 'integer', default = 0),
+                Field('num_likes', 'integer', default=0),
+                Field('num_dislikes', 'integer',  default=0),
+                Field('post_date', default=get_time),
                 )
 
 db.define_table('thumb',
                 Field('post', 'reference post'),
                 Field('rating', 'integer', default=0),
                 Field('rater_name'),
+                
                 Field('rater_id', 'reference auth_user', default=get_user) # User doing the rating.
                 )
 
