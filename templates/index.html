@@ -81,7 +81,7 @@
             <div class="content">
               <div class="tags" v-for="tutor_class in tutor.classes">
                 <span class="tag is-link">
-                  <b>{{tutor_class}} - </b> {{tutor.rate}}
+                  <b>{{tutor_class}} </b>
                 </span>
               </div>
             </div>
@@ -119,9 +119,9 @@
           <div class="content">
             <h5>Bio</h5>
             <p>{{selected_tutor.bio}}</p>
-            <h5>Rate</h5>
+            <h5>Rate - ${{selected_tutor.rate}}</h5>
             <div class="tags" v-for="c in selected_tutor.classes">
-              <span class="tag is-link"><b>{{c}} - </b>{{selected_tutor.rate}}</span>
+              <span class="tag is-link"><b>{{c}} </b></span>
             </div>
 
             <h5>Availability</h5>
