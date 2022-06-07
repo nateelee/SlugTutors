@@ -262,7 +262,7 @@ def see_reviews(tutor_id=None):
         add_post_url = URL('add_post', signer=url_signer),
         delete_post_url = URL('delete_post', signer=url_signer),
         edit_post_url = URL('edit_post', signer=url_signer),
-
+        update_rating_url = URL('update_rating', signer=url_signer),
         get_rating_url = URL('get_rating', signer=url_signer),
         set_rating_url = URL('set_rating', signer=url_signer),
         edit_contact_url = URL('edit_contact', signer=url_signer)
@@ -337,6 +337,38 @@ def add_post():
         name = full_name,
         email = email,
     )
+
+@action('update_rating', method="POST")
+@action.uses(url_signer.verify(), db, auth.user)
+def update_rating():
+    email = db(db.auth_user.email == get_user_email()).select().first()
+    name = db(db.auth_user.id == get_user()).select().first()
+    full_name = get_name(name)
+
+    tutor_being_rated = request.json.get('tutor_id')
+
+    post_id = request.json.get('post_id')
+    id = db.post.update_or_insert((db.post.id == post_id),
+        post_body=request.json.get('post_body'),
+        name = full_name,
+        tutor_being_rated = tutor_being_rated,
+        rating_number = request.json.get('rating_number'),
+    )
+    posts = db(db.post).select().as_list()
+    ratings = []
+    for post in posts:
+        if post['tutor_being_rated'] is not None and tutor_being_rated is not None and (int(post['tutor_being_rated']) == int(tutor_being_rated)):
+            ratings.append(post['rating_number'])
+    average = round(sum(ratings)/len(ratings) if sum(ratings) !=0 else 0, 1)
+    if average == 0:
+        average = ""
+    return dict(
+        id=id,
+        average = average,
+        name = full_name,
+        email = email,
+    )
+
 
 @action('delete_post')
 @action.uses(url_signer.verify(), db)

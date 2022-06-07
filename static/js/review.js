@@ -13,13 +13,14 @@ let init = (app) => {
         post_content: "",
         rows: [],
         average: 0,
-        the_tutor_id : 0,
+        the_tutor_id: 0,
         rating_number: 0,
+        edit_rating_number: 0,
     };
 
     app.enumerate = (a) => {
         let k = 0;
-        a.map((e) => {e._idx = k++;});
+        a.map((e) => { e._idx = k++; });
         return a;
     };
 
@@ -35,58 +36,55 @@ let init = (app) => {
 
 
 
-    app.get_rating= async(postid) => {
-        const ratings = await axios.post(get_rating_url, {post_id: postid}).then(response => response.data)
-        app.data.thumbs = {...app.data.thumbs, [postid]: ratings}
+    app.get_rating = async(postid) => {
+        const ratings = await axios.post(get_rating_url, { post_id: postid }).then(response => response.data)
+        app.data.thumbs = {...app.data.thumbs, [postid]: ratings }
     };
 
     app.set_rating = (postid, rating, previous_rating) => {
         const obj = app.vue.rows.find(element => element.id == postid)
-        if (rating == -1){
-            if (previous_rating == 1){
+        if (rating == -1) {
+            if (previous_rating == 1) {
                 obj.num_likes--;
             }
             obj.num_dislikes++;
-        }
-        else if (rating == 1){
-            if (previous_rating == -1){
+        } else if (rating == 1) {
+            if (previous_rating == -1) {
                 obj.num_dislikes--;
             }
             obj.num_likes++;
-        }
-        else if (rating == 0){
-            if (previous_rating == -1){
+        } else if (rating == 0) {
+            if (previous_rating == -1) {
                 obj.num_dislikes--;
-            }
-            else if (previous_rating == 1){
+            } else if (previous_rating == 1) {
                 obj.num_likes--;
             }
         }
         app.vue.rows = [...app.vue.rows]
-        axios.post(set_rating_url, {post_id: postid, rating, num_likes: obj.num_likes, num_dislikes: obj.num_dislikes }).then(response => response.data).then(results => {
-            app.data.rows = [...app.data.rows.map(post => post.id == postid ? {...post, my_thumb: rating}:post)]
-            app.data.thumbs = {...app.data.thumbs, [postid]: results}
-            
+        axios.post(set_rating_url, { post_id: postid, rating, num_likes: obj.num_likes, num_dislikes: obj.num_dislikes }).then(response => response.data).then(results => {
+            app.data.rows = [...app.data.rows.map(post => post.id == postid ? {...post, my_thumb: rating } : post)]
+            app.data.thumbs = {...app.data.thumbs, [postid]: results }
+
         })
-        
+
     };
 
     app.decorate = (a) => {
         a.forEach((e) => {
             e._state = "clean";
-            e._server_vals = {post: e.post};
+            e._server_vals = { post: e.post };
+            e.is_being_editted = false;
         });
         return a;
     };
 
-    app.add_post = function () {
-        axios.post(add_post_url,
-            {   
-                tutor_id: app.vue.the_tutor_id,
-                post_body: app.vue.post_content,
-                rating_number: app.vue.rating_number,
-               
-            }).then(function (response) {
+    app.add_post = function() {
+        axios.post(add_post_url, {
+            tutor_id: app.vue.the_tutor_id,
+            post_body: app.vue.post_content,
+            rating_number: app.vue.rating_number,
+
+        }).then(function(response) {
             app.vue.average = response.data.average;
             app.vue.rows.push({
                 id: response.data.id,
@@ -94,9 +92,10 @@ let init = (app) => {
                 name: response.data.name,
                 is_my_post: true,
                 rating_number: app.vue.rating_number,
-                _state:  "clean",
+                _state: "clean",
                 num_likes: 0,
                 num_dislikes: 0,
+                is_being_editted: false,
             });
             app.enumerate(app.vue.rows);
             app.reset_form();
@@ -105,13 +104,31 @@ let init = (app) => {
         });
     };
 
-    app.reset_form = function () {
+    app.add_edit_rating = function(row_idx) {
+        let row = app.vue.rows[row_idx];
+        axios.post(update_rating_url, {
+            post_id: row.id,
+            tutor_id: app.vue.the_tutor_id,
+            post_body: row.post_body,
+            rating_number: app.vue.edit_rating_number,
+
+        }).then(function(response) {
+            app.vue.average = response.data.average;
+
+            row.rating_number = app.vue.edit_rating_number;
+
+            app.edit_rating(row_idx, false);
+            app.vue.edit_rating_number = 0;
+        });
+    };
+
+    app.reset_form = function() {
         app.vue.post_content = "";
     };
 
     app.delete_post = function(row_idx) {
         let id = app.vue.rows[row_idx].id;
-        axios.get(delete_post_url, {params: {id: id}}).then(function (response) {
+        axios.get(delete_post_url, { params: { id: id } }).then(function(response) {
             app.vue.average = response.data.average;
             for (let i = 0; i < app.vue.rows.length; i++) {
                 if (app.vue.rows[i].id === id) {
@@ -120,23 +137,30 @@ let init = (app) => {
                     break;
                 }
             }
-            });
+        });
     };
 
-    app.set_add_status = function (new_status) {
+    app.edit_rating = function(r_idx, new_status) {
+        let row = app.vue.rows[r_idx];
+        row.is_being_editted = new_status;
+    };
+
+    app.set_add_status = function(new_status) {
         app.vue.add_mode = new_status;
     };
 
-    app.start_edit = function (row_idx) {
+    app.start_edit = function(row_idx) {
         app.vue.rows[row_idx]._state = "edit";
     };
 
-    app.stop_edit = function (row_idx) {
+
+    app.stop_edit = function(row_idx) {
         let row = app.vue.rows[row_idx];
         if (row._state === 'edit') {
             row._state = "clean";
             axios.post(edit_contact_url, {
-                id: row.id, value: row.post_body
+                id: row.id,
+                value: row.post_body
             })
         }
     };
@@ -151,7 +175,9 @@ let init = (app) => {
         set_rating: app.set_rating,
         start_edit: app.start_edit,
         stop_edit: app.stop_edit,
-        
+        edit_rating: app.edit_rating,
+        add_edit_rating: app.add_edit_rating
+
     };
 
     // This creates the Vue instance.
@@ -163,26 +189,25 @@ let init = (app) => {
 
     app.init = () => {
         app.vue.the_tutor_id = tutor_id;
-        axios.get(load_posts_url,{ params: {the_tutor_id : tutor_id}})
-        .then((result) => {
-            let rows = result.data.rows;
-            console.log("here", rows);
-            app.vue.rows = app.decorate(app.enumerate(result.data.rows));
-            app.enumerate(rows);
-            app.complete(rows);
-            app.vue.rows = rows;
-            app.vue.average = result.data.average
-        })
-        .then(() => {
-            for (let r of app.vue.rows) {
-                axios.get(get_rating_url, {params: {"post_id": r.id}})
-                    .then((result) => {
-                        r.rater_id = result.data.rater_id;
-                        r.rating = result.data.rating;
-                    });
-            }
+        axios.get(load_posts_url, { params: { the_tutor_id: tutor_id } })
+            .then((result) => {
+                let rows = result.data.rows;
+                app.vue.rows = app.decorate(app.enumerate(result.data.rows));
+                app.enumerate(rows);
+                app.complete(rows);
+                app.vue.rows = rows;
+                app.vue.average = result.data.average
+            })
+            .then(() => {
+                for (let r of app.vue.rows) {
+                    axios.get(get_rating_url, { params: { "post_id": r.id } })
+                        .then((result) => {
+                            r.rater_id = result.data.rater_id;
+                            r.rating = result.data.rating;
+                        });
+                }
 
-        });
+            });
     };
 
     // Call to the initializer.

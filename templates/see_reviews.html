@@ -30,8 +30,7 @@
                 </div>
                 <div class="field">
                     <div class="control">
-                        <textarea type="text" v-model="post_content" class="textarea"
-                            placeholder="Enter a new post here"></textarea>
+                        <textarea type="text" v-model="post_content" class="textarea" placeholder="Enter a new post here"></textarea>
                     </div>
                 </div>
 
@@ -59,13 +58,40 @@
             <div class="tile is-vertical">
 
                 <div v-for="r in rows" class="tile is-child box is-light">
+
+                    <div v-if="r.is_being_editted" class="container block">
+                        <div class="form">
+                            <div class="field block">
+                                <div class="">Rate out of 5</div>
+                                <div class="select is-info is-medium">
+                                    <select v-model="edit_rating_number">
+                                        <option value = "5">5</option>
+                                        <option value = "4">4</option>
+                                        <option value = "3">3</option>
+                                        <option value = "2">2</option>
+                                        <option value = "1">1</option>
+                                    </select>
+                                </div>
+
+                            </div>
+                            <div class="field">
+                                <div v-if="edit_rating_number != 0" class="control">
+                                    <input type="submit" @click="add_edit_rating(r._idx)" value="Post" class="button is-primary">
+                                    <input type="submit" @click="edit_rating(r._idx, false)" value="Cancel" class="button is-danger">
+                                </div>
+                                <div v-if="edit_rating_number == 0" class="control">
+                                    <div>Please enter a proper rating before resubmitting</div>
+                                    <input type="submit" @click="edit_rating(r._idx, false)" value="Cancel" class="button is-danger">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     <article class="media">
                         <div class="media-left">
                             <div class="has-text-black">
-                                <span v-if="r.rating_number == 5 || r.rating_number == 4"
-                                    class="tag has-text-black has-background-warning is-size-4">
+                                <span v-if="r.rating_number == 5 || r.rating_number == 4" class="tag has-text-black has-background-warning is-size-4">
                                     {{r.rating_number}}/5
-                                </span> 
+                                </span>
                                 <strong v-else-if="r.rating_number == 3" class="tag has-text-black has-background-primary is-size-4">
                                     {{r.rating_number}}/5
                                 </strong>
@@ -78,6 +104,8 @@
 
                             </div>
                         </div>
+
+
                         <div class="media-content">
                             <div class="content">
                                 <p>
@@ -88,8 +116,7 @@
                                     </small>
                                     <br>
                                     <textarea type="text" class="textarea" rows="4" v-model="r.post_body" :class="{'is-focused': r._state === 'edit',
-                                            'is-white': r._state === 'clean'}" :readonly="r._state === 'clean'"
-                                        @click="start_edit(r._idx)" @blur="stop_edit(r._idx)"></textarea>
+                                            'is-white': r._state === 'clean'}" :readonly="r._state === 'clean'" @click="start_edit(r._idx)" @blur="stop_edit(r._idx)"></textarea>
                                     <br>
                                 </p>
                             </div>
@@ -104,8 +131,8 @@
                                             <i v-else class="fa fa-thumbs-o-up is-size-4"
                                                 v-on:click="set_rating(r.id, 1, 0)"></i>
                                         </span>
-                                        <span>{{r.num_likes}}</span>
-                                        <span class="has-text-dark">
+                                    <span>{{r.num_likes}}</span>
+                                    <span class="has-text-dark">
                                             <i v-if="r.my_thumb==-1"
                                                 class="fa fa-flip-horizontal fa-thumbs-down is-size-4"
                                                 v-on:click="set_rating(r.id, 0, -1)"></i>
@@ -115,24 +142,20 @@
                                             <i v-else class="fa fa-flip-horizontal fa-thumbs-o-down is-size-4"
                                                 v-on:click="set_rating(r.id, -1, 0)"></i>
                                         </span>
-                                        <span>{{r.num_dislikes}}</span>
+                                    <span>{{r.num_dislikes}}</span>
                                     </span>
                                     {{r.rater}}
                                 </div>
-                                <span v-if="r.is_my_post"
-                                v-on:click="delete_post(r._idx)">
-                                    <button class="delete is-large"></button>
+                                <span class="is-size-4" v-if="r.is_my_post">
+                                    <i class="has-text-link fa fa-pencil"  v-on:click="edit_rating(r._idx, true)"></i>
+                                    <i class="has-text-danger fa fa-trash " v-on:click="delete_post(r._idx)"></i>
                                 </span>
-                                <!-- <span class="has-text-danger is-size-4" v-if="r.is_my_post"
-                                    v-on:click="delete_post(r._idx)">
-                                    <i class="fa fa-trash "></i>
-                                </span> -->
                             </div>
                     </article>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
     </div>
     </div>
     </div>
@@ -154,12 +177,11 @@
 
     let get_rating_url = "[[=XML(get_rating_url)]]";
     let set_rating_url = "[[=XML(set_rating_url)]]";
-
+    let update_rating_url = "[[=XML(update_rating_url)]]";
     let current_user = "[[=current_user]]";
     let tutor_name = "[[=tutor_name]]";
     let tutor_id = "[[=tutor_id]]";
     let edit_contact_url = "[[=XML(edit_contact_url)]]"
-
 </script>
 <script src="js/review.js"></script>
 [[end]]
