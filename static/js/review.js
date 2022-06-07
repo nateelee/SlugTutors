@@ -15,6 +15,7 @@ let init = (app) => {
         average: 0,
         the_tutor_id : 0,
         rating_number: 0,
+        edit_rating_number: 0,
     };
 
     app.enumerate = (a) => {
@@ -50,6 +51,7 @@ let init = (app) => {
         a.forEach((e) => {
             e._state = "clean";
             e._server_vals = {post: e.post};
+            e.is_being_editted = false;
         });
         return a;
     };
@@ -70,11 +72,31 @@ let init = (app) => {
                 is_my_post: true,
                 rating_number: app.vue.rating_number,
                 _state:  "clean",
+                is_being_editted: false,
             });
             app.enumerate(app.vue.rows);
             app.reset_form();
             app.set_add_status(false);
             app.vue.rating_number = 0;
+        });
+    };
+
+    app.add_edit_rating = function (row_idx) {
+        let row = app.vue.rows[row_idx];
+        axios.post(update_rating_url,
+            {   
+                post_id: row.id,
+                tutor_id: app.vue.the_tutor_id,
+                post_body: row.post_body,
+                rating_number: app.vue.edit_rating_number,
+               
+            }).then(function (response) {
+            app.vue.average = response.data.average;
+           
+            row.rating_number = app.vue.edit_rating_number;
+           
+            app.edit_rating(row_idx, false);
+            app.vue.edit_rating_number = 0;
         });
     };
 
@@ -94,6 +116,11 @@ let init = (app) => {
                 }
             }
             });
+    };
+
+    app.edit_rating = function(r_idx, new_status) {
+        let row = app.vue.rows[r_idx];
+        row.is_being_editted = new_status;
     };
 
     app.set_add_status = function (new_status) {
@@ -124,6 +151,8 @@ let init = (app) => {
         set_rating: app.set_rating,
         start_edit: app.start_edit,
         stop_edit: app.stop_edit,
+        edit_rating: app.edit_rating,
+        add_edit_rating: app.add_edit_rating
         
     };
 

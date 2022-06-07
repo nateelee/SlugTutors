@@ -60,7 +60,36 @@
         <div class="tile is-vertical">
             <div v-for="r in rows" class="tile is-child box is-light">
                 <div class="container">
-                    <div>{{r.rating_number}}/5</div>
+                    <div v-if = "!r.is_being_editted">{{r.rating_number}}/5</div>
+                    <div v-if="r.is_being_editted" class="container block">
+                        <!-- <div class="title">Add Contact</div> -->
+                        
+                        <div class="form">
+                            <div class = "field block">
+                                <div class = "">Rate out of 5</div>
+                                <div class="select is-info is-medium">
+                                    <select v-model = "edit_rating_number">
+                                        <option value = "5">5</option>
+                                        <option value = "4">4</option>
+                                        <option value = "3">3</option>
+                                        <option value = "2">2</option>
+                                        <option value = "1">1</option>
+                                    </select>
+                                </div>
+                                 
+                            </div>  
+                            <div class="field">
+                                <div v-if = "edit_rating_number != 0" class="control">
+                                    <input type="submit" @click="add_edit_rating(r._idx)" value="Post" class="button is-primary">
+                                    <input type="submit" @click="edit_rating(r._idx, false)" value="Cancel" class="button is-danger">
+                                </div>
+                                <div v-if = "edit_rating_number == 0" class="control">
+                                    <div>Please enter a proper rating before resubmitting</div>
+                                    <input type="submit" @click="edit_rating(r._idx, false)" value="Cancel" class="button is-danger">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     <input type="text" class="input" v-model="r.post_body"
                     :class="{'is-focused': r._state === 'edit',
                            'is-static': r._state === 'clean'}"
@@ -69,7 +98,7 @@
                     @blur="stop_edit(r._idx)"
                      />
                     <div class="is-size6 has-text-grey">{{r.name}}</div>
-
+                    
                     <div class="is-flex is-justify-content-space-between width: 100%">
                         <div>
                             <span class="has-text-info" v-on:mouseenter="">
@@ -89,8 +118,10 @@
                             </span>
                             {{r.rater}}
                         </div>
-                        <span class="has-text-danger is-size-4" v-if="r.is_my_post" v-on:click="delete_post(r._idx)">
-                            <i class="fa fa-trash "></i>
+                      
+                        <span class="is-size-4" v-if="r.is_my_post">
+                            <i class="has-text-link fa fa-pencil"  v-on:click="edit_rating(r._idx, true)"></i>
+                            <i class="has-text-danger fa fa-trash " v-on:click="delete_post(r._idx)"></i>
                         </span>
 
                     </div>
@@ -111,6 +142,7 @@
 <script>
     let load_posts_url = "[[=XML(load_posts_url)]]";
     let add_post_url = "[[=XML(add_post_url)]]";
+    let update_rating_url = "[[=XML(update_rating_url)]]";
     let delete_post_url = "[[=XML(delete_post_url)]]";
     let edit_post_url = "[[=XML(edit_post_url)]]";
 
