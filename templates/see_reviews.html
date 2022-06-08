@@ -89,18 +89,18 @@
                     <article class="media">
                         <div class="media-left">
                             <div class="has-text-black">
-                                <span v-if="r.rating_number == 5 || r.rating_number == 4" class="tag has-text-black has-background-warning is-size-4">
+                                <span v-if="r.rating_number == 5 || r.rating_number == 4" class="tag has-text-black has-background-success is-size-4">
                                     {{r.rating_number}}/5
                                 </span>
-                                <strong v-else-if="r.rating_number == 3" class="tag has-text-black has-background-primary is-size-4">
+                                <span v-else-if="r.rating_number == 3" class="tag has-text-black has-background-primary is-size-4">
                                     {{r.rating_number}}/5
-                                </strong>
-                                <strong v-else-if="r.rating_number == 2" class="tag has-text-black has-background-warning is-size-4">
+                                </span>
+                                <span v-else-if="r.rating_number == 2" class="tag has-text-black has-background-warning is-size-4">
                                     {{r.rating_number}}/5
-                                </strong>
-                                <strong v-else-if="r.rating_number == 1" class="tag has-text-black has-background-danger is-size-4">
+                                </span>
+                                <span v-else-if="r.rating_number == 1" class="tag has-text-black has-background-danger is-size-4">
                                     {{r.rating_number}}/5
-                                </strong>
+                                </span>
 
                             </div>
                         </div>
@@ -112,8 +112,8 @@
                                     <strong>{{r.name}}</strong>
                                     <small>
                                         <span v-if="r.post_date">{{r.post_date.split(" ")[0]}}</span>
-                                        <span v-else>now</span>
-                                    </small>
+                                <span v-else>now</span>
+                                </small>
                                     <br>
                                     <textarea type="text" class="textarea" rows="4" v-model="r.post_body" :class="{'is-focused': r._state === 'edit',
                                             'is-white': r._state === 'clean'}" :readonly="r._state === 'clean'" @click="start_edit(r._idx)" @blur="stop_edit(r._idx)"></textarea>
