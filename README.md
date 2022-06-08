@@ -1,6 +1,6 @@
 CSE 183 Project - SlugTutors - created by: 
 * Nathaniel Lee
-* Raghav Raghav Lodha
+* Raghav Lodha
 * Kiara Winslow
 * Waylon Peng
 * Francis Brokering
