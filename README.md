@@ -1,3 +1,12 @@
+CSE 183 Project - SlugTutors - created by: 
+* Nathaniel Lee
+* Raghav Raghav Lodha
+* Kiara Winslow
+* Waylon Peng
+* Francis Brokering
+
+Hosted Web Application: https://slugtutors.appspot.com/
+
 # Sprint 1
 
 Home Page (Frontend Design)
