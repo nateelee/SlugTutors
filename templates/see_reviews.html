@@ -115,8 +115,17 @@
                                 <span v-else>now</span>
                                 </small>
                                     <br>
-                                    <textarea type="text" class="textarea" rows="4" v-model="r.post_body" :class="{'is-focused': r._state === 'edit',
-                                            'is-white': r._state === 'clean'}" :readonly="r._state === 'clean'" @click="start_edit(r._idx)" @blur="stop_edit(r._idx)"></textarea>
+                                    <div v-if="r.is_being_editted">
+                                        <textarea type="text" class="textarea" rows="4" v-model="r.post_body" :class="{'is-focused': r._state === 'edit',
+                                            'is-white': r._state === 'clean'}" :readonly="r._state === 'clean'" @click="start_edit(r._idx)" @blur="stop_edit(r._idx)">
+                                        </textarea>
+                                    </div>
+                                    <div v-else>
+                                        <textarea type="text" class="textarea" rows="4" v-model="r.post_body" :class="{'is-focused': r._state === 'edit',
+                                        'is-white': r._state === 'clean'}" :readonly="r._state === 'clean'" @blur="stop_edit(r._idx)">
+                                        </textarea>
+                                    </div>
+
                                     <br>
                                 </p>
                             </div>
