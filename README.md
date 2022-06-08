@@ -1,4 +1,4 @@
-#CSE 183 Project - SlugTutors - created by: 
+# CSE 183 Project - SlugTutors - created by: 
 
 * Nathaniel Lee
 * Raghav Lodha
