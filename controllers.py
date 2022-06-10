@@ -22,7 +22,7 @@ from itertools import groupby
 import os
 import time
 from py4web import action, request, abort, redirect, URL, Field, HTTP
-from ombott import static_file, static_stream
+from ombott import static_file, response
 from yatl.helpers import A
 from .common import (
     db,
@@ -48,7 +48,7 @@ url_signer = URLSigner(session)
 @action("index")
 @action.uses("index.html", db, auth, url_signer)
 def index():
-  
+
     classes = {c["id"]: c["class_name"] for c in db(db.classes).select()}
     get_tutors_url = URL("get_tutors", signer=url_signer)
     get_tutor_classes_url = URL("get_tutor_classes", signer=url_signer)
@@ -56,9 +56,10 @@ def index():
     return dict(
         get_tutors_url=get_tutors_url,
         get_tutor_classes_url=get_tutor_classes_url,
-        get_tutor_class_history_url = get_tutor_class_history_url,
+        get_tutor_class_history_url=get_tutor_class_history_url,
         classes=classes,
     )
+
 
 @action("get_tutor_class_history")
 @action.uses(db, auth)
@@ -66,6 +67,7 @@ def get_tutor_class_history():
     tutor_id = int(request.params.get("tutor_id"))
     class_history = db((db.history.tutor_id == tutor_id)).select()
     return dict(class_history=class_history)
+
 
 @action("get_tutors")
 @action.uses(db, auth)
@@ -82,7 +84,6 @@ def get_tutors():
 
     tutor_list = db(q).select(db.tutors.ALL, groupby=db.tutors.id).as_list()
 
-   
     return dict(tutor_list=tutor_list)
 
 
@@ -146,41 +147,54 @@ def delete(class_id=None):
 @action.uses("create_tutor.html", db, auth.user)
 def create_tutor():
 
+    # form = Form(
+    #     [
+    #         Field("base_rate"),
+    #         Field("bio"),
+    #         Field("major"),
+    #         Field("year"),
+    #         Field("Monday"),
+    #         Field("Tuesday"),
+    #         Field("Wednesday"),
+    #         Field("Thursday"),
+    #         Field("Friday"),
+    #         Field("Saturday"),
+    #         Field("Sunday"),
+    #         Field("thumbnail", 'upload', label="Avatar"),
+    #     ],
+    #     deletable=False,
+    #     csrf_session=session,
+    #     formstyle=FormStyleBulma,
+    # )
+
+    # if form.accepted:
+    #     db.tutors.update_or_insert(
+    #         user_id=auth.current_user["id"],
+    #         major=form.vars["major"],
+    #         year=form.vars["year"],
+    #         rate=form.vars["base_rate"],
+    #         bio=form.vars["bio"],
+    #         thumbnail=form.vars["thumbnail"],
+    #         Monday=form.vars["Monday"],
+    #         Tuesday=form.vars["Tuesday"],
+    #         Wednesday=form.vars["Wednesday"],
+    #         Thursday=form.vars["Thursday"],
+    #         Friday=form.vars["Friday"],
+    #         Saturday=form.vars["Saturday"],
+    #         Sunday=form.vars["Sunday"],
+    #     )
+    #     redirect(URL("tutor_home"))
+
     form = Form(
-        [
-            Field("base_rate"),
-            Field("bio"),
-            Field("major"),
-            Field("year"),
-            Field("Monday"),
-            Field("Tuesday"),
-            Field("Wednesday"),
-            Field("Thursday"),
-            Field("Friday"),
-            Field("Saturday"),
-            Field("Sunday"),
-            Field("thumbnail", 'upload', label="Avatar"),
-        ],
+        db.tutors,
         deletable=False,
         csrf_session=session,
         formstyle=FormStyleBulma,
     )
 
     if form.accepted:
-        db.tutors.update_or_insert(
-            user_id=auth.current_user["id"],
-            major=form.vars["major"],
-            year=form.vars["year"],
-            rate=form.vars["base_rate"],
-            bio=form.vars["bio"],
-            thumbnail=form.vars["thumbnail"],
-            Monday=form.vars["Monday"],
-            Tuesday=form.vars["Tuesday"],
-            Wednesday=form.vars["Wednesday"],
-            Thursday=form.vars["Thursday"],
-            Friday=form.vars["Friday"],
-            Saturday=form.vars["Saturday"],
-            Sunday=form.vars["Sunday"],
+        db(db.tutors.id == get_tutor().id).update(
+            thumbnail_blob=form.vars["thumbnail"].file.read()
         )
         redirect(URL("tutor_home"))
 
@@ -234,7 +248,6 @@ def tutor_add_class():
     return dict(form=form)
 
 
-
 @action("back")
 @action.uses(db, auth.user, url_signer)
 def back():
@@ -242,37 +255,37 @@ def back():
     return dict()
 
 
-@action('see_reviews/<tutor_id:int>', method=['GET', 'POST']) # the :int means: please convert this to an int.
-@action.uses('see_reviews.html', db, auth.user)
+@action(
+    "see_reviews/<tutor_id:int>", method=["GET", "POST"]
+)  # the :int means: please convert this to an int.
+@action.uses("see_reviews.html", db, auth.user)
 # ... has to match the contact_id parameter of the Python function here.
 def see_reviews(tutor_id=None):
     assert tutor_id is not None
     tutor = db((db.tutors.id == tutor_id)).select().as_list()
-   
-    tutor_name =""
+
+    tutor_name = ""
     for t in tutor:
-        tutor_name = t['name']
+        tutor_name = t["name"]
     current_user = db.auth_user.first_name
     return dict(
         # This is the signed URL for the callback.
-        current_user = current_user,
-        tutor_name = tutor_name,
-        tutor_id = tutor_id,
-        load_posts_url = URL('load_posts', signer=url_signer),
-        add_post_url = URL('add_post', signer=url_signer),
-        update_rating_url = URL('update_rating', signer=url_signer),
-        delete_post_url = URL('delete_post', signer=url_signer),
-        edit_post_url = URL('edit_post', signer=url_signer),
-
-        get_rating_url = URL('get_rating', signer=url_signer),
-        set_rating_url = URL('set_rating', signer=url_signer),
-        edit_contact_url = URL('edit_contact', signer=url_signer)
+        current_user=current_user,
+        tutor_name=tutor_name,
+        tutor_id=tutor_id,
+        load_posts_url=URL("load_posts", signer=url_signer),
+        add_post_url=URL("add_post", signer=url_signer),
+        update_rating_url=URL("update_rating", signer=url_signer),
+        delete_post_url=URL("delete_post", signer=url_signer),
+        edit_post_url=URL("edit_post", signer=url_signer),
+        get_rating_url=URL("get_rating", signer=url_signer),
+        set_rating_url=URL("set_rating", signer=url_signer),
+        edit_contact_url=URL("edit_contact", signer=url_signer),
     )
 
 
-
 # This is our very first API function.
-@action('load_posts')
+@action("load_posts")
 @action.uses(url_signer.verify(), db)
 def load_posts():
     name = db(db.auth_user.id == get_user()).select().first()
@@ -280,137 +293,159 @@ def load_posts():
     last_name = name.last_name
     full_name = str(first_name) + " " + str(last_name)
 
-    the_tutor_id = int(request.params.get('the_tutor_id'))
+    the_tutor_id = int(request.params.get("the_tutor_id"))
     posts = db(db.post.tutor_being_rated == the_tutor_id).select().as_list()
-    ratings =[]
+    ratings = []
     for post in posts:
-        post['is_my_post'] = post.get('name') == full_name
-        thumbs = db(db.thumb.post == post['id']).select()
-        if post['tutor_being_rated'] is not None and the_tutor_id is not None and (int(post['tutor_being_rated']) == int(the_tutor_id)):
-            
-            ratings.append(post['rating_number'])
-        for thumb in thumbs:
-            thumb['rater_id'] = thumb.get('rater_id')
-        my_thumb = db((db.thumb.post == post['id']) & (
-            db.thumb.rater_id == get_user())).select().first()
+        post["is_my_post"] = post.get("name") == full_name
+        thumbs = db(db.thumb.post == post["id"]).select()
+        if (
+            post["tutor_being_rated"] is not None
+            and the_tutor_id is not None
+            and (int(post["tutor_being_rated"]) == int(the_tutor_id))
+        ):
 
-        post['my_thumb'] = my_thumb.get('rating') if my_thumb is not None else 0  
-    average = round(sum(ratings)/len(ratings) if sum(ratings) !=0 else 0, 1)
+            ratings.append(post["rating_number"])
+        for thumb in thumbs:
+            thumb["rater_id"] = thumb.get("rater_id")
+        my_thumb = (
+            db((db.thumb.post == post["id"]) & (db.thumb.rater_id == get_user()))
+            .select()
+            .first()
+        )
+
+        post["my_thumb"] = my_thumb.get("rating") if my_thumb is not None else 0
+    average = round(sum(ratings) / len(ratings) if sum(ratings) != 0 else 0, 1)
     if average == 0:
         average = ""
     return dict(
-        rows = posts,
-        average = average,
+        rows=posts,
+        average=average,
     )
 
-@action('add_post', method="POST")
+
+@action("add_post", method="POST")
 @action.uses(url_signer.verify(), db, auth.user)
 def add_post():
     email = db(db.auth_user.email == get_user_email()).select().first()
     name = db(db.auth_user.id == get_user()).select().first()
     full_name = get_name(name)
 
-    tutor_being_rated = request.json.get('tutor_id')
+    tutor_being_rated = request.json.get("tutor_id")
     id = db.post.insert(
-        post_body=request.json.get('post_body'),
-        name = full_name,
-        tutor_being_rated = tutor_being_rated,
-        rating_number = request.json.get('rating_number'),
+        post_body=request.json.get("post_body"),
+        name=full_name,
+        tutor_being_rated=tutor_being_rated,
+        rating_number=request.json.get("rating_number"),
     )
 
     posts = db(db.post).select().as_list()
     ratings = []
     for post in posts:
-        if post['tutor_being_rated'] is not None and tutor_being_rated is not None and (int(post['tutor_being_rated']) == int(tutor_being_rated)):
-            ratings.append(post['rating_number'])
-    average = round(sum(ratings)/len(ratings) if sum(ratings) !=0 else 0, 1)
+        if (
+            post["tutor_being_rated"] is not None
+            and tutor_being_rated is not None
+            and (int(post["tutor_being_rated"]) == int(tutor_being_rated))
+        ):
+            ratings.append(post["rating_number"])
+    average = round(sum(ratings) / len(ratings) if sum(ratings) != 0 else 0, 1)
     if average == 0:
         average = ""
     return dict(
         id=id,
-        average = average,
-        name = full_name,
-        email = email,
+        average=average,
+        name=full_name,
+        email=email,
     )
 
 
-@action('update_rating', method="POST")
+@action("update_rating", method="POST")
 @action.uses(url_signer.verify(), db, auth.user)
 def update_rating():
     email = db(db.auth_user.email == get_user_email()).select().first()
     name = db(db.auth_user.id == get_user()).select().first()
     full_name = get_name(name)
 
-    tutor_being_rated = request.json.get('tutor_id')
+    tutor_being_rated = request.json.get("tutor_id")
 
-    post_id = request.json.get('post_id')
-    id = db.post.update_or_insert((db.post.id == post_id),
-        post_body=request.json.get('post_body'),
-        name = full_name,
-        tutor_being_rated = tutor_being_rated,
-        rating_number = request.json.get('rating_number'),
+    post_id = request.json.get("post_id")
+    id = db.post.update_or_insert(
+        (db.post.id == post_id),
+        post_body=request.json.get("post_body"),
+        name=full_name,
+        tutor_being_rated=tutor_being_rated,
+        rating_number=request.json.get("rating_number"),
     )
     posts = db(db.post).select().as_list()
     ratings = []
     for post in posts:
-        if post['tutor_being_rated'] is not None and tutor_being_rated is not None and (int(post['tutor_being_rated']) == int(tutor_being_rated)):
-            ratings.append(post['rating_number'])
-    average = round(sum(ratings)/len(ratings) if sum(ratings) !=0 else 0, 1)
+        if (
+            post["tutor_being_rated"] is not None
+            and tutor_being_rated is not None
+            and (int(post["tutor_being_rated"]) == int(tutor_being_rated))
+        ):
+            ratings.append(post["rating_number"])
+    average = round(sum(ratings) / len(ratings) if sum(ratings) != 0 else 0, 1)
     if average == 0:
         average = ""
     return dict(
         id=id,
-        average = average,
-        name = full_name,
-        email = email,
+        average=average,
+        name=full_name,
+        email=email,
     )
 
-@action('delete_post')
+
+@action("delete_post")
 @action.uses(url_signer.verify(), db)
 def delete_post():
-    id = request.params.get('id')
+    id = request.params.get("id")
     assert id is not None
     p = db(db.post.id == id).select().first()
     tutor = p["tutor_being_rated"]
     db(db.post.id == id).delete()
     posts = db(db.post).select().as_list()
     ratings = []
-    
+
     for post in posts:
-        if post['tutor_being_rated'] is not None and tutor is not None and (int(post['tutor_being_rated']) == int(tutor)):
-          
-            ratings.append(post['rating_number'])
-    average = round(sum(ratings)/len(ratings) if sum(ratings) !=0 else 0, 1)
+        if (
+            post["tutor_being_rated"] is not None
+            and tutor is not None
+            and (int(post["tutor_being_rated"]) == int(tutor))
+        ):
+
+            ratings.append(post["rating_number"])
+    average = round(sum(ratings) / len(ratings) if sum(ratings) != 0 else 0, 1)
     if average == 0:
         average = ""
     return dict(
-        average = average,
+        average=average,
     )
+
 
 def get_name(name):
     first_name = name.first_name
     last_name = name.last_name
     return str(first_name) + " " + str(last_name)
 
-@action('get_rating')
+
+@action("get_rating")
 @action.uses(url_signer.verify(), db, auth.user)
 def get_rating():
     """Returns the rating for a user and an image."""
-    post_id = request.params.get('post_id')
+    post_id = request.params.get("post_id")
     thumbs = db((db.thumb.post == post_id)).select()
-    num_likes=0
+    num_likes = 0
     num_dislikes = 0
     return dict()
 
 
-
-
-@action('set_rating', method='POST')
+@action("set_rating", method="POST")
 @action.uses(url_signer.verify(), db, auth.user)
 def set_rating():
     """Sets the rating for an image."""
-    post_id = request.json.get('post_id')
-    rating = request.json.get('rating')
+    post_id = request.json.get("post_id")
+    rating = request.json.get("rating")
     assert post_id is not None and rating is not None
     name = db(db.auth_user.id == get_user()).select().first()
     full_name = get_name(name)
@@ -422,22 +457,23 @@ def set_rating():
         post=post_id,
         rater_id=get_user(),
         rating=rating,
-        rater_name = full_name
+        rater_name=full_name,
     )
-    return "ok" # Just to have some confirmation in the Network tab.
+    return "ok"  # Just to have some confirmation in the Network tab.
 
 
-@action('edit_contact', method="POST")
+@action("edit_contact", method="POST")
 @action.uses(url_signer.verify(), db)
 def edit_contact():
-    id = request.json.get('id')
-    value = request.json.get('value')
+    id = request.json.get("id")
+    value = request.json.get("value")
     db(db.post.id == id).update(**{"post_body": value})
     time.sleep(1)
     return "ok"
 
-@action('aboutus')
-@action.uses('aboutus.html')
+
+@action("aboutus")
+@action.uses("aboutus.html")
 def aboutus():
     return dict()
 
@@ -464,7 +500,7 @@ def tutor_add_history():
             tutor_id=get_tutor().id,
             coarse_name=form.vars["class_name"],
             instructor=form.vars["instructor"],
-            quarter_taken=form.vars["quarter_taken"]
+            quarter_taken=form.vars["quarter_taken"],
         )
         redirect(URL("class_history"))
 
@@ -482,17 +518,15 @@ def class_history():
     return dict(rows=rows)
 
 
-@action('delete_class_hist/<class_id:int>')
+@action("delete_class_hist/<class_id:int>")
 @action.uses(db, auth.user)
 def delete_class_hist(class_id=None):
     assert class_id is not None
     tutor_id = get_tutor()
-    db(
-        (db.history.id == class_id)
-        & (db.history.tutor_id == tutor_id)
-    ).delete()
+    db((db.history.id == class_id) & (db.history.tutor_id == tutor_id)).delete()
     redirect(URL("class_history"))
     return dict()
+
 
 @action("thumbnail/<tutor_id:int>")
 @action.uses(db)
@@ -504,5 +538,4 @@ def thumbnail(tutor_id=None):
         raise HTTP(404)
 
     _, f = db.tutors.thumbnail.retrieve(t.thumbnail)
-    path, filename = os.path.dirname(f.name), os.path.basename(f.name)
-    return static_file(filename, path, mimetype="auto")
+    return f
