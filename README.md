@@ -6,6 +6,8 @@
 * Waylon Peng
 * Francis Brokering
 
+Hosted Web Application: https://slugtutors.appspot.com/
+
 Slides: https://docs.google.com/presentation/d/1ACCT0fIn61I01shSKfEXnBEnXaC2sc1TlGR1rK8vpYQ/edit#slide=id.g121b46d55ac_3_0
 
 # Sprint 1
